@@ -1,0 +1,576 @@
+{
+  "workspace": "/Users/migraine/Desktop/tns-noval",
+  "product_doc": "/Users/migraine/Desktop/tns-noval/task.md",
+  "thread": 1,
+  "refresh_hours": 5,
+  "refresh_minutes": null,
+  "refresh_seconds": null,
+  "permission_mode": "acceptEdits",
+  "effort": "high",
+  "success_interval_seconds": 1,
+  "idle_interval_seconds": 60,
+  "max_budget_usd": null,
+  "permissions": {
+    "default_profile": "standard",
+    "profiles": {
+      "standard": {
+        "permission_mode": "acceptEdits",
+        "allowed_bash_commands": [
+          "pwd",
+          "ls",
+          "cat",
+          "sed",
+          "rg",
+          "find",
+          "git",
+          "node",
+          "wc",
+          "mkdir",
+          "test"
+        ],
+        "workspace_only": true
+      }
+    },
+    "section_profiles": []
+  },
+  "exploration": {
+    "enabled": false,
+    "allow_taskx": true,
+    "taskx_filename": "taskx.md",
+    "max_rounds_per_window": 1,
+    "agent": "tns-executor",
+    "plan_taskx": true,
+    "taskx_min_score": 75,
+    "taskx_branch_dir": ".tns/taskx",
+    "require_taskx_deliverables": true
+  },
+  "monitor": {
+    "heartbeat_seconds": 30,
+    "max_agent_runtime_seconds": 1800,
+    "kill_grace_seconds": 15
+  },
+  "tmux": {
+    "enabled": false,
+    "auto_create": true,
+    "session_name": "",
+    "window_name": "tns",
+    "socket_name": "",
+    "manage_runner": false,
+    "runner_window_name": "tns-runner"
+  },
+  "workflow": {
+    "entry": "executor",
+    "max_steps_per_run": 6,
+    "agents": [
+      {
+        "id": "executor",
+        "agent": "tns-executor",
+        "schema": "executor",
+        "prompt_mode": "executor",
+        "transitions": [
+          {
+            "field": "outcome",
+            "equals": "blocked",
+            "set_status": "blocked",
+            "summary_field": "summary",
+            "review_field": "blocker",
+            "end": true
+          },
+          {
+            "field": "clean_state",
+            "equals": false,
+            "set_status": "pending",
+            "summary_field": "summary",
+            "end": true
+          },
+          {
+            "field": "ready_for_verification",
+            "equals": false,
+            "set_status": "pending",
+            "summary_field": "summary",
+            "end": true
+          },
+          {
+            "next": "verifier"
+          }
+        ]
+      },
+      {
+        "id": "verifier",
+        "agent": "tns-verifier",
+        "schema": "verifier",
+        "prompt_mode": "verifier",
+        "transitions": [
+          {
+            "field": "status",
+            "equals": "pass",
+            "set_status": "done",
+            "summary_field": "summary",
+            "review_value": "",
+            "set_verified_at": true,
+            "end": true
+          },
+          {
+            "field": "status",
+            "in": [
+              "fail",
+              "blocked"
+            ],
+            "set_status": "needs_fix",
+            "summary_field": "summary",
+            "review_field": "review_note",
+            "append_review": true,
+            "end": true
+          }
+        ]
+      }
+    ]
+  },
+  "attempts": {
+    "max_attempts_per_section": 3
+  },
+  "preflight": {
+    "required_files": [
+      "task.md"
+    ],
+    "required_directories": [
+      ".tns",
+      "draft/chapters",
+      "story_bible"
+    ]
+  },
+  "validators": [],
+  "command_bridge": {
+    "command_sets": {},
+    "hooks": [
+      {
+        "id": "ensure-chapter-dir",
+        "timing": "pre_step",
+        "section_ids": [
+          "sec-005",
+          "sec-006",
+          "sec-007",
+          "sec-008",
+          "sec-009"
+        ],
+        "command": "mkdir -p draft/chapters",
+        "description": "Ensure chapter output directory exists before any chapter write"
+      }
+    ]
+  },
+  "policy": {
+    "preflight_failure": {
+      "action": "block_section",
+      "review_prefix": "Preflight failed"
+    },
+    "command_failure": {
+      "action": "mark_needs_fix",
+      "review_prefix": "Command hook failed"
+    },
+    "outside_workspace_violation": {
+      "action": "block_section",
+      "review_prefix": "Workspace boundary violation"
+    },
+    "validator_failure": {
+      "preflight": {
+        "action": "block_section",
+        "review_prefix": "Preflight validator failed"
+      },
+      "pre_step": {
+        "action": "mark_needs_fix",
+        "review_prefix": "Pre-step validator failed"
+      },
+      "post_step": {
+        "action": "mark_needs_fix",
+        "review_prefix": "Post-step validator failed"
+      },
+      "post_run": {
+        "action": "mark_needs_fix",
+        "review_prefix": "Post-run validator failed"
+      }
+    }
+  },
+  "outputs": {
+    "write_section_outputs": true
+  },
+  "execution": {
+    "long_running": {
+      "agent": "tns-executor",
+      "workspace": "primary",
+      "persists_state": true,
+      "gc_after_run": false,
+      "max_parallel": 1
+    },
+    "temporary": {
+      "agent": "tns-temp-executor",
+      "workspace": "temporary",
+      "persists_state": false,
+      "must_report_to": "tns-executor",
+      "gc_after_run": true,
+      "max_parallel": 1
+    },
+    "verifier": {
+      "agent": "tns-verifier",
+      "workspace": "primary",
+      "persists_state": false,
+      "must_report_to": "tns-executor",
+      "gc_after_run": true,
+      "max_runtime_seconds": 600,
+      "max_parallel": 1
+    }
+  },
+  "externals": {
+    "tools": [],
+    "skills": [],
+    "mcp": []
+  },
+  "skillbases": {
+    "use_default_sources": true,
+    "sources": [],
+    "selection": {
+      "mode": "explicit",
+      "max_matches_per_section": 2,
+      "min_score": 0.22,
+      "verifier_mode": "none"
+    }
+  },
+  "injections": {
+    "default_profile": null,
+    "profiles": {
+      "compiler": {
+        "skills": [
+          "tns-program-compiler"
+        ],
+        "description": "Inject the compiler skill only for compile synthesis passes."
+      },
+      "planner": {
+        "skills": [
+          "tns-task-planner"
+        ],
+        "description": "Inject the planner skill only for task quality and task.md planning passes."
+      },
+      "executor_task": {
+        "skills": [],
+        "external_skill_paths": [],
+        "description": "Executor-only task skills. Add domain/action skills here; verifier does not inherit them."
+      },
+      "verifier_audit": {
+        "skills": [],
+        "external_skill_paths": [],
+        "description": "Verifier-only audit skills. Add readonly inspection, schema, test, or Docker verifier skills here."
+      }
+    },
+    "rules": [
+      {
+        "match_mode": "compile",
+        "profile": "compiler"
+      },
+      {
+        "match_mode": "plan",
+        "profile": "planner"
+      },
+      {
+        "match_mode": "executor",
+        "profile": "executor_task"
+      },
+      {
+        "match_mode": "verifier",
+        "profile": "verifier_audit"
+      }
+    ]
+  },
+  "program": {
+    "entry": "sec-001",
+    "context": {
+      "visited_sections": [],
+      "current_section": "sec-001"
+    },
+    "states": [
+      {
+        "id": "sec-001",
+        "type": "task",
+        "description": "Story Premise",
+        "parallel": {
+          "depends_on": [],
+          "resource": "section:sec-001"
+        },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_section",
+            "value": "sec-001"
+          },
+          {
+            "op": "append",
+            "path": "visited_sections",
+            "value": "sec-001"
+          }
+        ],
+        "transitions": [
+          {
+            "id": "next-sec-001",
+            "to": "sec-002"
+          }
+        ]
+      },
+      {
+        "id": "sec-002",
+        "type": "task",
+        "description": "Global Protocol (each section must follow)",
+        "parallel": {
+          "depends_on": [
+            "sec-004"
+          ],
+          "resource": "section:sec-002"
+        },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_section",
+            "value": "sec-002"
+          },
+          {
+            "op": "append",
+            "path": "visited_sections",
+            "value": "sec-002"
+          }
+        ],
+        "transitions": [
+          {
+            "id": "next-sec-002",
+            "to": "sec-003"
+          }
+        ]
+      },
+      {
+        "id": "sec-003",
+        "type": "task",
+        "description": "Section 01: Story Outline & World Building",
+        "parallel": {
+          "depends_on": [],
+          "resource": "section:sec-003"
+        },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_section",
+            "value": "sec-003"
+          },
+          {
+            "op": "append",
+            "path": "visited_sections",
+            "value": "sec-003"
+          }
+        ],
+        "transitions": [
+          {
+            "id": "next-sec-003",
+            "to": "sec-004"
+          }
+        ]
+      },
+      {
+        "id": "sec-004",
+        "type": "task",
+        "description": "Section 02: Character Profiles",
+        "parallel": {
+          "depends_on": [
+            "sec-003"
+          ],
+          "resource": "section:sec-004"
+        },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_section",
+            "value": "sec-004"
+          },
+          {
+            "op": "append",
+            "path": "visited_sections",
+            "value": "sec-004"
+          }
+        ],
+        "transitions": [
+          {
+            "id": "next-sec-004",
+            "to": "sec-005"
+          }
+        ]
+      },
+      {
+        "id": "sec-005",
+        "type": "task",
+        "description": "Chapter 01: 圣焰之影 (Shadow of the Sacred Flame)",
+        "parallel": {
+          "depends_on": [
+            "sec-003",
+            "sec-004"
+          ],
+          "resource": "section:sec-005"
+        },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_section",
+            "value": "sec-005"
+          },
+          {
+            "op": "append",
+            "path": "visited_sections",
+            "value": "sec-005"
+          }
+        ],
+        "transitions": [
+          {
+            "id": "next-sec-005",
+            "to": "sec-006"
+          }
+        ]
+      },
+      {
+        "id": "sec-006",
+        "type": "task",
+        "description": "Chapter 02: 暗夜奔逃 (Flight Through Darkness)",
+        "parallel": {
+          "depends_on": [
+            "sec-003",
+            "sec-004",
+            "sec-005"
+          ],
+          "resource": "section:sec-006"
+        },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_section",
+            "value": "sec-006"
+          },
+          {
+            "op": "append",
+            "path": "visited_sections",
+            "value": "sec-006"
+          }
+        ],
+        "transitions": [
+          {
+            "id": "next-sec-006",
+            "to": "sec-007"
+          }
+        ]
+      },
+      {
+        "id": "sec-007",
+        "type": "task",
+        "description": "Chapter 03: 圣殿的裂痕 (Crack in the Sanctuary)",
+        "parallel": {
+          "depends_on": [
+            "sec-003",
+            "sec-004",
+            "sec-006"
+          ],
+          "resource": "section:sec-007"
+        },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_section",
+            "value": "sec-007"
+          },
+          {
+            "op": "append",
+            "path": "visited_sections",
+            "value": "sec-007"
+          }
+        ],
+        "transitions": [
+          {
+            "id": "next-sec-007",
+            "to": "sec-008"
+          }
+        ]
+      },
+      {
+        "id": "sec-008",
+        "type": "task",
+        "description": "Chapter 04: 审判之日 (Day of Judgment)",
+        "parallel": {
+          "depends_on": [
+            "sec-003",
+            "sec-004",
+            "sec-007"
+          ],
+          "resource": "section:sec-008"
+        },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_section",
+            "value": "sec-008"
+          },
+          {
+            "op": "append",
+            "path": "visited_sections",
+            "value": "sec-008"
+          }
+        ],
+        "transitions": [
+          {
+            "id": "next-sec-008",
+            "to": "sec-009"
+          }
+        ]
+      },
+      {
+        "id": "sec-009",
+        "type": "task",
+        "description": "Chapter 05: 燎原星火 (A Single Spark)",
+        "parallel": {
+          "depends_on": [
+            "sec-003",
+            "sec-004",
+            "sec-008"
+          ],
+          "resource": "section:sec-009"
+        },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_section",
+            "value": "sec-009"
+          },
+          {
+            "op": "append",
+            "path": "visited_sections",
+            "value": "sec-009"
+          }
+        ],
+        "transitions": [
+          {
+            "id": "complete-sec-009",
+            "to": "done"
+          }
+        ]
+      },
+      {
+        "id": "done",
+        "type": "terminal",
+        "terminal": true,
+        "description": "All sections visited",
+        "on_enter": [
+          {
+            "op": "emit",
+            "event": "program-complete"
+          }
+        ],
+        "transitions": []
+      }
+    ],
+    "max_steps": 36,
+    "threads": 1,
+    "parallel": {
+      "mode": "off",
+      "max_threads": 1
+    }
+  }
+}
