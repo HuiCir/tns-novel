@@ -1,95 +1,110 @@
 # Novel Writing Task
 
-Write a multi-chapter story using the persistent story bible files in this
-workspace. Each section owns one phase of the pipeline.
+This task is orchestrated by the TNS FSM program defined in `tns_config.json`.
+Each section below corresponds to an FSM state. The FSM handles conditional
+routing (success/retry/failure), evaluation mode branching (deep/fast), and
+the chapter writing loop.
 
-## Global Protocol (each section must follow)
+## Global Protocol (all sections)
 
-- Read all `story_bible/*.md` files and previous chapter drafts before writing.
-- Before drafting, update any needed assumptions in world, timeline, or character notes.
-- Write the chapter to `draft/chapters/chapter-XX.md`.
-- Append a concise chapter summary and continuity handoff to `story_bible/chapter_summaries.md`.
-- Update entity relationship changes in `story_bible/entities.md`.
-- Merge lasting character state changes back into `story_bible/characters.md`.
-- Run `node scripts/check_novel.js` before claiming the section is ready.
+- Read story bible files before writing: `story_bible/world.md`, `characters.md`,
+  `timeline.md`, `entities.md`, `chapter_summaries.md`, and all previous chapters.
+- Write chapter output to `draft/chapters/chapter-0X.md`.
+- After each chapter, update story bible with summaries, entity changes,
+  and character state changes.
+- Run `node scripts/check_novel.js` before claiming the section ready.
 
-## Section 01: Story Outline & World Building
+---
 
-Define the complete story structure before writing any chapters.
+## Phase 1: Outline
 
-- Define the act structure for this arc.
-- Establish the world setting, political landscape, and central conflict.
-- List all major characters with their arcs.
-- Write the outline to `story_bible/outline.md`.
+### outline_gen — Generate Story Outline
+Define the complete story structure: act breakdown, world setting, central
+conflict, character list with arcs. Output to `story_bible/outline.md`.
 
 Acceptance criteria:
 - `story_bible/outline.md` exists with complete structure.
-- Major characters are defined with motivations and arcs.
-- The central conflict is clearly outlined.
+- At least 5 major characters defined with arcs.
+- Central conflict and themes articulated.
 
-## Section 02: Character Profiles
+### outline_val — Validate Outline
+Verify the outline meets all structural requirements. Check character count,
+conflict clarity, and format compliance.
 
-Develop deep character profiles for every major character.
+### outline_fb — Outline Feedback
+Present the outline for human review. User may approve, request changes,
+or trigger regeneration.
 
-Write profiles to `story_bible/characters.md`.
+### outline_fb_proc — Process Outline Feedback
+Apply user feedback: accept modifications, confirm approval, or flag retry.
 
-Acceptance criteria:
-- Each character has background, personality, goals, conflicts, and arc.
-- Character relationships are mapped with tension points.
-- Profiles are consistent with the outline.
+---
 
-## Chapter 01: Opening
+## Phase 2: Characters
 
-Write the first chapter. Establish the world, introduce the protagonist,
-present the inciting incident, and set the immediate stakes.
-
-Acceptance criteria:
-- `draft/chapters/chapter-01.md` exists with substantial content.
-- The chapter creates a clear inciting pressure point.
-- Story bible files reflect the chapter's durable changes.
-- `node scripts/check_novel.js` passes.
-
-## Chapter 02: Escalation
-
-Write the second chapter. Escalate the conflict and deepen character
-relationships. Introduce complications that raise the stakes.
+### char_gen — Generate Character Profiles
+Develop deep profiles for every major character: background, personality,
+goals, conflicts, arc, and relationships. Output to `story_bible/characters.md`.
 
 Acceptance criteria:
-- `draft/chapters/chapter-02.md` exists with substantial content.
-- The chapter follows causally from chapter 01.
+- Each character has background, personality, goals, conflicts, arc.
+- Character relationships mapped with tension points.
+- Profiles consistent with outline.
+
+### char_val — Validate Character Profiles
+Verify character profiles for completeness and outline consistency.
+
+### char_fb — Character Feedback
+Present character profiles for human review.
+
+### char_fb_proc — Process Character Feedback
+Apply user feedback on character profiles.
+
+---
+
+## Phase 3: Chapter Pipeline (repeats for chapters 01–05)
+
+Each chapter follows this pipeline (FSM handles the loop):
+
+### ch0X_write — Write Chapter 0X
+Write the complete chapter following the outline and character profiles.
+Output to `draft/chapters/chapter-0X.md`.
+
+Acceptance criteria:
+- Complete chapter with substantial word count.
+- Follows causally from previous chapters.
+- Characters act consistently with their profiles.
 - Story bible files updated.
-- `node scripts/check_novel.js` passes.
 
-## Chapter 03: Reversal
+### ch0X_val — Validate Chapter 0X
+Verify chapter structure, word count, and format compliance.
 
-Write the third chapter. Deliver the central reversal that changes the
-trajectory of the story irreversibly.
+### ch0X_fb — Chapter 0X Feedback
+Present chapter for human review.
 
-Acceptance criteria:
-- `draft/chapters/chapter-03.md` exists with substantial content.
-- The reversal is clear and changes the situation permanently.
-- Story bible files updated.
-- `node scripts/check_novel.js` passes.
+### ch0X_fb_proc — Process Chapter 0X Feedback
+Apply user feedback on the chapter.
 
-## Chapter 04: Confrontation
+### ch0X_eval — Evaluate Chapter 0X
+Score chapter on plot, character consistency, style, pacing, and logic.
+Generate structured evaluation report.
 
-Write the fourth chapter. Bring tensions to a head. Show the cost of
-earlier choices and force characters into their final positions.
+### ch0X_eval_val — Validate Evaluation
+Verify evaluation report format and completeness.
 
-Acceptance criteria:
-- `draft/chapters/chapter-04.md` exists with substantial content.
-- The chapter tightens the danger and prepares the ending.
-- Story bible files updated.
-- `node scripts/check_novel.js` passes.
+### ch0X_super — Supervisor Review (deep mode)
+Multi-agent consistency check: character arcs, plot thread resolution,
+world state coherence. Only runs in "deep" evaluation mode.
 
-## Chapter 05: Resolution
+### ch0X_accept — Accept Chapter 0X
+Save chapter to storage, update story bible, advance chapter index.
 
-Write the final chapter. Complete the arc while leaving a clean opening
-for continuation. Resolve the immediate stakes while preserving future
-possibilities.
+---
 
-Acceptance criteria:
-- `draft/chapters/chapter-05.md` exists with substantial content.
-- The ending resolves the immediate arc satisfyingly.
-- Story bible files contain final summaries and character states.
-- `node scripts/check_novel.js` passes.
+## Terminal States
+
+### success
+All chapters written, evaluated, and accepted. Pipeline complete.
+
+### failure
+Pipeline failed due to max attempts exceeded or unrecoverable error.

@@ -1,91 +1,133 @@
 # tns-noval
 
-TNS-powered novel writing workspace with persistent story bible tracking,
-executor/verifier agent pipeline, and real-time dashboard monitoring.
+Pure TNS-orchestrated novel writing workspace. The complete novel-writing
+pipeline is defined as a **TNS FSM program** in `tns_config.json` — no
+Python, no LangGraph, no external orchestration. TNS drives everything.
 
 ## Architecture
 
 ```
-task.md ──────► tns compile ──► .tns/compiled/program.json
-    │
-    ▼
-tns run ──► [executor] claude -p --agent tns-executor
-    │           │ writes chapter, updates story bible
-    │           ▼
-    └──────► [verifier] claude -p --agent tns-verifier
-                │ checks continuity, acceptance criteria
-                ▼
-         .tns/sections.json (state tracking)
-                │
-                ▼
-         Dashboard (port 48731)
+tns_config.json          task.md
+  │  FSM program           │  Section definitions
+  │  70+ states            │  Acceptance criteria
+  ▼                        ▼
+  └──────────┬─────────────┘
+             ▼
+     TNS FSM Runtime
+             │
+     ┌───────┴────────┐
+     ▼                ▼
+ [executor]        [verifier]
+ claude -p         claude -p
+     │                │
+     ▼                ▼
+ sections.json    dashboard
+ state tracking   :48731
 ```
+
+## FSM Pipeline (defined in `program.states`)
+
+```
+Phase 1: Outline
+  outline_gen → outline_val → [decide] → outline_fb → outline_fb_proc → [decide]
+
+Phase 2: Characters
+  char_gen → char_val → [decide] → char_fb → char_fb_proc → [decide]
+
+Phase 3: Chapter Loop (×5)
+  For each chapter (01–05):
+    ch0X_write → ch0X_val → ch0X_fb → ch0X_fb_proc
+      → [decide_ch0X_fb]
+      → ch0X_eval → ch0X_eval_val → [decide_ch0X_eval]
+          ├─ deep mode → ch0X_super → [decide_ch0X_super]
+          │                 ├─ pass → ch0X_accept
+          │                 └─ revise → ch0X_write (loop)
+          └─ fast mode → ch0X_accept
+      → [decide_chapter_done]
+          ├─ more chapters → ch0Y_write
+          └─ all done → success
+
+Terminal: success | failure
+```
+
+## FSM Features
+
+- **70+ states**: task states for generation/validation/evaluation, decision
+  states for conditional routing
+- **Retry loops**: failed validation routes back to generation via `needs_fix`
+- **Dual evaluation modes**: `deep` (supervisor review) vs `fast` (direct accept)
+  controlled by context variable `evaluation_mode`
+- **Revision loop**: supervisor-detected issues route back to chapter rewrite
+- **Chapter loop**: `decide_chapter_done` state routes to next chapter or success
+- **Safety limits**: `chapter_loop_count` capped at 25 to prevent infinite loops
+- **Phase grouping**: each chapter uses `parallel.resource` for isolation
 
 ## Quick Start
 
 ```bash
-# Initialize workspace
-tns init --workspace /path/to/project --template novel-writing --dashboard
+# Initialize
+tns init --workspace ./my-novel --template novel-writing --dashboard
 
-# Plan your story
-tns plan --text "describe your story" --apply --compile
+# Write story bible and customize task.md with your story
 
-# Run one section
-tns run --once
-
-# Continuous loop
-tns start
+# Compile and run
+tns compile --synthesize --apply
+tns run --once          # One section at a time
+tns start               # Continuous loop
 
 # Monitor
 tns status && tns btw
+open http://127.0.0.1:48731/?workspace=...&key=...  # Dashboard
 ```
 
 ## Project Structure
 
 ```
-├── task.md                  # Workflow definition (TNS sections)
-├── tns_config.json          # TNS configuration
+├── tns_config.json          # TNS config + complete FSM program
+├── task.md                  # Section definitions with acceptance criteria
 ├── story_bible/             # Persistent world state
-│   ├── world.md             # Setting, politics, magic system
+│   ├── world.md             # Setting, politics, belief system
 │   ├── characters.md        # Character profiles with arcs
-│   ├── timeline.md          # Chronology and causal chain
+│   ├── timeline.md          # Chronology tracking
 │   ├── entities.md          # Organizations, locations, items
 │   ├── outline.md           # Story structure and themes
 │   └── chapter_summaries.md # Per-chapter summaries + handoffs
 ├── draft/chapters/          # Chapter output
 │   ├── chapter-01.md
 │   └── ...
-├── scripts/
-│   └── check_novel.js       # Continuity checker
-└── src/
-    ├── orchestrator.py      # TNS-style section workflow engine
-    └── workflow.py          # Novel writing workflow definition
+└── scripts/
+    └── check_novel.js       # Continuity checker
 ```
 
-## Section Pipeline
+## FSM Program (excerpt)
 
-Each section in `task.md` goes through:
-
-1. **pending** → Awaiting processing
-2. **executor** → Claude Code agent writes/updates content
-3. **verifier** → Independent agent checks acceptance criteria
-4. **done** / **needs_fix** → Pass or retry (max 3 attempts)
-
-## Python Orchestrator
-
-The `src/orchestrator.py` module provides a LangGraph-free workflow engine
-using TNS-style sections with conditional transitions:
-
-```python
-from src.orchestrator import Workflow, Section, Transition
-
-wf = Workflow(entry="generate_outline")
-wf.add_section(Section(
-    id="generate_outline",
-    handler=generate_outline_handler,
-    transitions=[Transition(field="_route", equals="success", next="validate")],
-))
-wf.compile()
+```json
+{
+  "program": {
+    "entry": "outline_gen",
+    "context": {
+      "evaluation_mode": "deep",
+      "current_chapter": 1,
+      "total_chapters": 5
+    },
+    "states": [
+      {
+        "id": "ch01_write",
+        "type": "task",
+        "transitions": [{ "to": "ch01_val" }]
+      },
+      {
+        "id": "decide_ch01_eval",
+        "type": "decision",
+        "transitions": [
+          { "to": "ch01_super", "when": { "path": "evaluation_mode", "equals": "deep" } },
+          { "to": "ch01_accept", "when": { "path": "evaluation_mode", "equals": "fast" } },
+          { "to": "ch01_write", "when": { "path": "action", "equals": "revise" } }
+        ]
+      }
+    ]
+  }
+}
 ```
 
-See `src/workflow.py` for the full novel-writing pipeline definition.
+See `tns_config.json` for the complete 70+ state FSM program.
