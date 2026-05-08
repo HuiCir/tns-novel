@@ -15,7 +15,19 @@
     "profiles": {
       "standard": {
         "permission_mode": "acceptEdits",
-        "allowed_bash_commands": ["pwd","ls","cat","sed","rg","find","git","node","wc","mkdir","test"],
+        "allowed_bash_commands": [
+          "pwd",
+          "ls",
+          "cat",
+          "sed",
+          "rg",
+          "find",
+          "git",
+          "node",
+          "wc",
+          "mkdir",
+          "test"
+        ],
         "workspace_only": true
       }
     },
@@ -89,7 +101,10 @@
           },
           {
             "field": "status",
-            "in": ["fail", "blocked"],
+            "in": [
+              "fail",
+              "blocked"
+            ],
             "set_status": "needs_fix",
             "summary_field": "summary",
             "review_field": "review_note",
@@ -104,8 +119,15 @@
     "max_attempts_per_section": 3
   },
   "preflight": {
-    "required_files": ["task.md"],
-    "required_directories": [".tns", "draft/chapters", "story_bible"]
+    "required_files": [
+      "scripts/check_novel.js",
+      "task.md"
+    ],
+    "required_directories": [
+      ".tns",
+      "draft/chapters",
+      "story_bible"
+    ]
   },
   "command_bridge": {
     "command_sets": {},
@@ -113,58 +135,152 @@
       {
         "id": "ensure-chapter-dir",
         "timing": "pre_step",
-        "section_ids": ["ch01_write","ch02_write","ch03_write","ch04_write","ch05_write"],
+        "section_ids": [
+          "ch01_write",
+          "ch02_write",
+          "ch03_write",
+          "ch04_write",
+          "ch05_write"
+        ],
         "command": "mkdir -p draft/chapters",
         "description": "Ensure chapter output directory exists before writing"
+      },
+      {
+        "id": "check-novel-post-write",
+        "timing": "post_step",
+        "section_ids": [
+          "outline_gen",
+          "char_gen",
+          "ch01_write",
+          "ch02_write",
+          "ch03_write",
+          "ch04_write",
+          "ch05_write"
+        ],
+        "command": "node scripts/check_novel.js",
+        "description": "Run novel consistency check after each content-producing step (Global Protocol)"
       }
     ]
   },
   "policy": {
-    "preflight_failure": { "action": "block_section", "review_prefix": "Preflight failed" },
-    "command_failure": { "action": "mark_needs_fix", "review_prefix": "Command hook failed" },
-    "outside_workspace_violation": { "action": "block_section", "review_prefix": "Workspace boundary violation" },
+    "preflight_failure": {
+      "action": "block_section",
+      "review_prefix": "Preflight failed"
+    },
+    "command_failure": {
+      "action": "mark_needs_fix",
+      "review_prefix": "Command hook failed"
+    },
+    "outside_workspace_violation": {
+      "action": "block_section",
+      "review_prefix": "Workspace boundary violation"
+    },
     "validator_failure": {
-      "preflight": { "action": "block_section", "review_prefix": "Preflight validator failed" },
-      "pre_step": { "action": "mark_needs_fix", "review_prefix": "Pre-step validator failed" },
-      "post_step": { "action": "mark_needs_fix", "review_prefix": "Post-step validator failed" },
-      "post_run": { "action": "mark_needs_fix", "review_prefix": "Post-run validator failed" }
+      "preflight": {
+        "action": "block_section",
+        "review_prefix": "Preflight validator failed"
+      },
+      "pre_step": {
+        "action": "mark_needs_fix",
+        "review_prefix": "Pre-step validator failed"
+      },
+      "post_step": {
+        "action": "mark_needs_fix",
+        "review_prefix": "Post-step validator failed"
+      },
+      "post_run": {
+        "action": "mark_needs_fix",
+        "review_prefix": "Post-run validator failed"
+      }
     }
   },
-  "outputs": { "write_section_outputs": true },
+  "outputs": {
+    "write_section_outputs": true
+  },
   "execution": {
     "long_running": {
-      "agent": "tns-executor", "workspace": "primary",
-      "persists_state": true, "max_parallel": 1
+      "agent": "tns-executor",
+      "workspace": "primary",
+      "persists_state": true,
+      "gc_after_run": false,
+      "max_parallel": 1
     },
     "temporary": {
-      "agent": "tns-temp-executor", "workspace": "temporary",
-      "persists_state": false, "must_report_to": "tns-executor",
-      "gc_after_run": true, "max_parallel": 1
+      "agent": "tns-temp-executor",
+      "workspace": "temporary",
+      "persists_state": false,
+      "must_report_to": "tns-executor",
+      "gc_after_run": true,
+      "max_parallel": 1
     },
     "verifier": {
-      "agent": "tns-verifier", "workspace": "primary",
-      "persists_state": false, "must_report_to": "tns-executor",
-      "gc_after_run": true, "max_runtime_seconds": 600, "max_parallel": 1
+      "agent": "tns-verifier",
+      "workspace": "primary",
+      "persists_state": false,
+      "must_report_to": "tns-executor",
+      "gc_after_run": true,
+      "max_runtime_seconds": 600,
+      "max_parallel": 1
     }
   },
-  "externals": { "tools": [], "skills": [], "mcp": [] },
-  "skillbases": { "use_default_sources": true, "sources": [], "selection": { "mode": "explicit", "max_matches_per_section": 2, "min_score": 0.22, "verifier_mode": "none" } },
+  "externals": {
+    "tools": [],
+    "skills": [],
+    "mcp": []
+  },
+  "skillbases": {
+    "use_default_sources": true,
+    "sources": [],
+    "selection": {
+      "mode": "explicit",
+      "max_matches_per_section": 2,
+      "min_score": 0.22,
+      "verifier_mode": "none"
+    }
+  },
   "injections": {
     "default_profile": null,
     "profiles": {
-      "compiler": { "skills": ["tns-program-compiler"], "description": "Compiler skill for compile synthesis passes." },
-      "planner": { "skills": ["tns-task-planner"], "description": "Planner skill for task quality and task.md planning passes." },
-      "executor_task": { "skills": [], "description": "Executor-only task skills." },
-      "verifier_audit": { "skills": [], "description": "Verifier-only audit skills." }
+      "compiler": {
+        "skills": [
+          "tns-program-compiler"
+        ],
+        "description": "Compiler skill for compile synthesis passes."
+      },
+      "planner": {
+        "skills": [
+          "tns-task-planner"
+        ],
+        "description": "Planner skill for task quality and task.md planning passes."
+      },
+      "executor_task": {
+        "skills": [],
+        "description": "Executor-only task skills."
+      },
+      "verifier_audit": {
+        "skills": [],
+        "description": "Verifier-only audit skills."
+      }
     },
     "rules": [
-      { "match_mode": "compile", "profile": "compiler" },
-      { "match_mode": "plan", "profile": "planner" },
-      { "match_mode": "executor", "profile": "executor_task" },
-      { "match_mode": "verifier", "profile": "verifier_audit" }
+      {
+        "match_mode": "compile",
+        "profile": "compiler"
+      },
+      {
+        "match_mode": "plan",
+        "profile": "planner"
+      },
+      {
+        "match_mode": "executor",
+        "profile": "executor_task"
+      },
+      {
+        "match_mode": "verifier",
+        "profile": "verifier_audit"
+      }
     ]
   },
-  "_program_from_compiled": false,
   "program": {
     "entry": "outline_gen",
     "context": {
@@ -177,31 +293,56 @@
     },
     "max_steps": 100,
     "threads": 1,
-    "parallel": { "mode": "off", "max_threads": 1 },
+    "parallel": {
+      "mode": "off",
+      "max_threads": 1
+    },
     "states": [
-
       "============================ PHASE 1: OUTLINE ============================",
-
       {
         "id": "outline_gen",
         "type": "task",
         "description": "Generate story outline with act structure, characters, and central conflict",
         "on_enter": [
-          { "op": "set", "path": "phase", "value": "outline" },
-          { "op": "set", "path": "step", "value": "generate" },
-          { "op": "inc", "path": "outline_attempts", "by": 1 }
+          {
+            "op": "set",
+            "path": "phase",
+            "value": "outline"
+          },
+          {
+            "op": "set",
+            "path": "step",
+            "value": "generate"
+          },
+          {
+            "op": "inc",
+            "path": "outline_attempts",
+            "by": 1
+          }
         ],
         "transitions": [
-          { "id": "outline-gen-ok", "to": "outline_val" }
+          {
+            "id": "outline-gen-ok",
+            "to": "outline_val"
+          }
         ]
       },
       {
         "id": "outline_val",
         "type": "task",
         "description": "Validate outline: check structure, character count, conflict clarity",
-        "on_enter": [{ "op": "set", "path": "step", "value": "validate" }],
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "validate"
+          }
+        ],
         "transitions": [
-          { "id": "outline-val-ok", "to": "decide_outline" }
+          {
+            "id": "outline-val-ok",
+            "to": "decide_outline"
+          }
         ]
       },
       {
@@ -210,31 +351,72 @@
         "description": "Route: success→feedback, retry→gen, failure→end",
         "on_enter": [],
         "transitions": [
-          { "id": "outline-success", "to": "outline_fb",
-            "when": { "path": "passes", "equals": true } },
-          { "id": "outline-retry", "to": "outline_gen",
-            "when": { "path": "passes", "equals": false },
-            "actions": [{ "op": "emit", "event": "outline-retry" }] },
-          { "id": "outline-failure", "to": "failure",
-            "when": { "path": "outline_attempts", "gt": 10 } }
+          {
+            "id": "outline-success",
+            "to": "outline_fb",
+            "when": {
+              "path": "passes",
+              "equals": true
+            }
+          },
+          {
+            "id": "outline-retry",
+            "to": "outline_gen",
+            "when": {
+              "path": "passes",
+              "equals": false
+            },
+            "actions": [
+              {
+                "op": "emit",
+                "event": "outline-retry"
+              }
+            ]
+          },
+          {
+            "id": "outline-failure",
+            "to": "failure",
+            "when": {
+              "path": "outline_attempts",
+              "gt": 10
+            }
+          }
         ]
       },
       {
         "id": "outline_fb",
         "type": "task",
         "description": "Present outline for human feedback; user may modify or approve",
-        "on_enter": [{ "op": "set", "path": "step", "value": "feedback" }],
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "feedback"
+          }
+        ],
         "transitions": [
-          { "id": "outline-fb-ok", "to": "outline_fb_proc" }
+          {
+            "id": "outline-fb-ok",
+            "to": "outline_fb_proc"
+          }
         ]
       },
       {
         "id": "outline_fb_proc",
         "type": "task",
         "description": "Process outline feedback: apply modifications or confirm approval",
-        "on_enter": [{ "op": "set", "path": "step", "value": "process_feedback" }],
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "process_feedback"
+          }
+        ],
         "transitions": [
-          { "id": "fb-proc-ok", "to": "decide_outline_fb" }
+          {
+            "id": "fb-proc-ok",
+            "to": "decide_outline_fb"
+          }
         ]
       },
       {
@@ -243,38 +425,83 @@
         "description": "Route: continue→characters, retry→regenerate outline, fail→end",
         "on_enter": [],
         "transitions": [
-          { "id": "fb-next", "to": "char_gen",
-            "when": { "path": "action", "equals": "continue" } },
-          { "id": "fb-retry", "to": "outline_gen",
-            "when": { "path": "action", "equals": "retry" },
-            "actions": [{ "op": "emit", "event": "outline-fb-retry" }] },
-          { "id": "fb-fail", "to": "failure",
-            "when": { "path": "action", "equals": "failure" } }
+          {
+            "id": "fb-next",
+            "to": "char_gen",
+            "when": {
+              "path": "action",
+              "equals": "continue"
+            }
+          },
+          {
+            "id": "fb-retry",
+            "to": "outline_gen",
+            "when": {
+              "path": "action",
+              "equals": "retry"
+            },
+            "actions": [
+              {
+                "op": "emit",
+                "event": "outline-fb-retry"
+              }
+            ]
+          },
+          {
+            "id": "fb-fail",
+            "to": "failure",
+            "when": {
+              "path": "action",
+              "equals": "failure"
+            }
+          }
         ]
       },
-
       "============================ PHASE 2: CHARACTERS ============================",
-
       {
         "id": "char_gen",
         "type": "task",
         "description": "Generate detailed character profiles from the outline",
         "on_enter": [
-          { "op": "set", "path": "phase", "value": "characters" },
-          { "op": "set", "path": "step", "value": "generate" },
-          { "op": "inc", "path": "char_attempts", "by": 1 }
+          {
+            "op": "set",
+            "path": "phase",
+            "value": "characters"
+          },
+          {
+            "op": "set",
+            "path": "step",
+            "value": "generate"
+          },
+          {
+            "op": "inc",
+            "path": "char_attempts",
+            "by": 1
+          }
         ],
         "transitions": [
-          { "id": "char-gen-ok", "to": "char_val" }
+          {
+            "id": "char-gen-ok",
+            "to": "char_val"
+          }
         ]
       },
       {
         "id": "char_val",
         "type": "task",
         "description": "Validate character profiles: check completeness, consistency with outline",
-        "on_enter": [{ "op": "set", "path": "step", "value": "validate" }],
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "validate"
+          }
+        ],
         "transitions": [
-          { "id": "char-val-ok", "to": "decide_char" }
+          {
+            "id": "char-val-ok",
+            "to": "decide_char"
+          }
         ]
       },
       {
@@ -283,31 +510,72 @@
         "description": "Route: success→feedback, retry→regenerate, failure→end",
         "on_enter": [],
         "transitions": [
-          { "id": "char-success", "to": "char_fb",
-            "when": { "path": "passes", "equals": true } },
-          { "id": "char-retry", "to": "char_gen",
-            "when": { "path": "passes", "equals": false },
-            "actions": [{ "op": "emit", "event": "char-retry" }] },
-          { "id": "char-failure", "to": "failure",
-            "when": { "path": "char_attempts", "gt": 10 } }
+          {
+            "id": "char-success",
+            "to": "char_fb",
+            "when": {
+              "path": "passes",
+              "equals": true
+            }
+          },
+          {
+            "id": "char-retry",
+            "to": "char_gen",
+            "when": {
+              "path": "passes",
+              "equals": false
+            },
+            "actions": [
+              {
+                "op": "emit",
+                "event": "char-retry"
+              }
+            ]
+          },
+          {
+            "id": "char-failure",
+            "to": "failure",
+            "when": {
+              "path": "char_attempts",
+              "gt": 10
+            }
+          }
         ]
       },
       {
         "id": "char_fb",
         "type": "task",
         "description": "Present character profiles for human feedback",
-        "on_enter": [{ "op": "set", "path": "step", "value": "feedback" }],
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "feedback"
+          }
+        ],
         "transitions": [
-          { "id": "char-fb-ok", "to": "char_fb_proc" }
+          {
+            "id": "char-fb-ok",
+            "to": "char_fb_proc"
+          }
         ]
       },
       {
         "id": "char_fb_proc",
         "type": "task",
         "description": "Process character feedback: apply changes or confirm",
-        "on_enter": [{ "op": "set", "path": "step", "value": "process_feedback" }],
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "process_feedback"
+          }
+        ],
         "transitions": [
-          { "id": "char-fb-proc-ok", "to": "decide_char_fb" }
+          {
+            "id": "char-fb-proc-ok",
+            "to": "decide_char_fb"
+          }
         ]
       },
       {
@@ -316,63 +584,138 @@
         "description": "Route: continue→writing, retry→regenerate characters",
         "on_enter": [],
         "transitions": [
-          { "id": "char-fb-next", "to": "ch01_write",
-            "when": { "path": "action", "equals": "continue" } },
-          { "id": "char-fb-retry", "to": "char_gen",
-            "when": { "path": "action", "equals": "retry" },
-            "actions": [{ "op": "emit", "event": "char-fb-retry" }] },
-          { "id": "char-fb-fail", "to": "failure",
-            "when": { "path": "action", "equals": "failure" } }
+          {
+            "id": "char-fb-next",
+            "to": "ch01_write",
+            "when": {
+              "path": "action",
+              "equals": "continue"
+            }
+          },
+          {
+            "id": "char-fb-retry",
+            "to": "char_gen",
+            "when": {
+              "path": "action",
+              "equals": "retry"
+            },
+            "actions": [
+              {
+                "op": "emit",
+                "event": "char-fb-retry"
+              }
+            ]
+          },
+          {
+            "id": "char-fb-fail",
+            "to": "failure",
+            "when": {
+              "path": "action",
+              "equals": "failure"
+            }
+          }
         ]
       },
-
       "============================ PHASE 3: CHAPTER PIPELINE ============================",
       "=== Each chapter: write → validate → feedback → evaluate → [supervisor] → accept ===",
       "=== Chapter 01 ===",
-
       {
         "id": "ch01_write",
         "type": "task",
         "description": "Write Chapter 01: Opening — establish world, inciting incident",
         "on_enter": [
-          { "op": "set", "path": "phase", "value": "writing" },
-          { "op": "set", "path": "current_chapter", "value": 1 },
-          { "op": "set", "path": "step", "value": "write" },
-          { "op": "inc", "path": "chapter_loop_count", "by": 1 }
+          {
+            "op": "set",
+            "path": "phase",
+            "value": "writing"
+          },
+          {
+            "op": "set",
+            "path": "current_chapter",
+            "value": 1
+          },
+          {
+            "op": "set",
+            "path": "step",
+            "value": "write"
+          },
+          {
+            "op": "inc",
+            "path": "chapter_loop_count",
+            "by": 1
+          }
         ],
-        "parallel": { "resource": "chapter:01" },
+        "parallel": {
+          "resource": "chapter:01"
+        },
         "transitions": [
-          { "id": "ch01-write-ok", "to": "ch01_val" }
+          {
+            "id": "ch01-write-ok",
+            "to": "ch01_val"
+          }
         ]
       },
       {
         "id": "ch01_val",
         "type": "task",
         "description": "Validate Chapter 01: check word count, structure, continuity",
-        "on_enter": [{ "op": "set", "path": "step", "value": "validate" }],
-        "parallel": { "resource": "chapter:01" },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "validate"
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:01"
+        },
         "transitions": [
-          { "id": "ch01-val-ok", "to": "ch01_fb" }
+          {
+            "id": "ch01-val-ok",
+            "to": "ch01_fb"
+          }
         ]
       },
       {
         "id": "ch01_fb",
         "type": "task",
         "description": "Present Chapter 01 for human feedback",
-        "on_enter": [{ "op": "set", "path": "step", "value": "feedback" }],
-        "parallel": { "resource": "chapter:01" },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "feedback"
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:01"
+        },
         "transitions": [
-          { "id": "ch01-fb-ok", "to": "ch01_fb_proc" }
+          {
+            "id": "ch01-fb-ok",
+            "to": "ch01_fb_proc"
+          }
         ]
       },
       {
         "id": "ch01_fb_proc",
         "type": "task",
         "description": "Process Chapter 01 feedback",
-        "on_enter": [{ "op": "set", "path": "step", "value": "process_feedback" }],
-        "parallel": { "resource": "chapter:01" },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "process_feedback"
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:01"
+        },
         "transitions": [
-          { "id": "ch01-fb-proc-ok", "to": "decide_ch01_fb" }
+          {
+            "id": "ch01-fb-proc-ok",
+            "to": "decide_ch01_fb"
+          }
         ]
       },
       {
@@ -380,33 +723,78 @@
         "type": "decision",
         "description": "Route: fast→eval, deep→supervisor, retry→rewrite",
         "transitions": [
-          { "id": "ch01-fb-eval", "to": "ch01_eval",
-            "when": { "path": "action", "equals": "continue" } },
-          { "id": "ch01-fb-deep", "to": "ch01_super",
-            "when": { "path": "evaluation_mode", "equals": "deep" } },
-          { "id": "ch01-fb-retry", "to": "ch01_write",
-            "when": { "path": "action", "equals": "retry" },
-            "actions": [{ "op": "emit", "event": "ch01-fb-retry" }] }
+          {
+            "id": "ch01-fb-eval",
+            "to": "ch01_eval",
+            "when": {
+              "path": "action",
+              "equals": "continue"
+            }
+          },
+          {
+            "id": "ch01-fb-deep",
+            "to": "ch01_super",
+            "when": {
+              "path": "evaluation_mode",
+              "equals": "deep"
+            }
+          },
+          {
+            "id": "ch01-fb-retry",
+            "to": "ch01_write",
+            "when": {
+              "path": "action",
+              "equals": "retry"
+            },
+            "actions": [
+              {
+                "op": "emit",
+                "event": "ch01-fb-retry"
+              }
+            ]
+          }
         ]
       },
       {
         "id": "ch01_eval",
         "type": "task",
         "description": "Evaluate Chapter 01: plot, character, style, pacing scoring",
-        "on_enter": [{ "op": "set", "path": "step", "value": "evaluate" }],
-        "parallel": { "resource": "chapter:01" },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "evaluate"
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:01"
+        },
         "transitions": [
-          { "id": "ch01-eval-ok", "to": "ch01_eval_val" }
+          {
+            "id": "ch01-eval-ok",
+            "to": "ch01_eval_val"
+          }
         ]
       },
       {
         "id": "ch01_eval_val",
         "type": "task",
         "description": "Validate evaluation report for Chapter 01",
-        "on_enter": [{ "op": "set", "path": "step", "value": "validate_eval" }],
-        "parallel": { "resource": "chapter:01" },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "validate_eval"
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:01"
+        },
         "transitions": [
-          { "id": "ch01-eval-val-ok", "to": "decide_ch01_eval" }
+          {
+            "id": "ch01-eval-val-ok",
+            "to": "decide_ch01_eval"
+          }
         ]
       },
       {
@@ -414,25 +802,65 @@
         "type": "decision",
         "description": "Route: deep→supervisor, fast→accept, revise→rewrite, force→accept",
         "transitions": [
-          { "id": "ch01-eval-super", "to": "ch01_super",
-            "when": { "path": "evaluation_mode", "equals": "deep" } },
-          { "id": "ch01-eval-fast", "to": "ch01_accept",
-            "when": { "path": "evaluation_mode", "equals": "fast" } },
-          { "id": "ch01-eval-revise", "to": "ch01_write",
-            "when": { "path": "action", "equals": "revise" },
-            "actions": [{ "op": "emit", "event": "ch01-eval-revise" }] },
-          { "id": "ch01-eval-force", "to": "ch01_accept",
-            "when": { "path": "action", "equals": "force_accept" } }
+          {
+            "id": "ch01-eval-super",
+            "to": "ch01_super",
+            "when": {
+              "path": "evaluation_mode",
+              "equals": "deep"
+            }
+          },
+          {
+            "id": "ch01-eval-fast",
+            "to": "ch01_accept",
+            "when": {
+              "path": "evaluation_mode",
+              "equals": "fast"
+            }
+          },
+          {
+            "id": "ch01-eval-revise",
+            "to": "ch01_write",
+            "when": {
+              "path": "action",
+              "equals": "revise"
+            },
+            "actions": [
+              {
+                "op": "emit",
+                "event": "ch01-eval-revise"
+              }
+            ]
+          },
+          {
+            "id": "ch01-eval-force",
+            "to": "ch01_accept",
+            "when": {
+              "path": "action",
+              "equals": "force_accept"
+            }
+          }
         ]
       },
       {
         "id": "ch01_super",
         "type": "task",
         "description": "Supervisor review: multi-agent consistency check (character arcs, plot threads, world state)",
-        "on_enter": [{ "op": "set", "path": "step", "value": "supervisor" }],
-        "parallel": { "resource": "chapter:01" },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "step",
+            "value": "supervisor"
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:01"
+        },
         "transitions": [
-          { "id": "ch01-super-ok", "to": "decide_ch01_super" }
+          {
+            "id": "ch01-super-ok",
+            "to": "decide_ch01_super"
+          }
         ]
       },
       {
@@ -440,11 +868,28 @@
         "type": "decision",
         "description": "Route: pass→accept, revise→rewrite chapter",
         "transitions": [
-          { "id": "ch01-super-pass", "to": "ch01_accept",
-            "when": { "path": "revision_needed", "equals": false } },
-          { "id": "ch01-super-revise", "to": "ch01_write",
-            "when": { "path": "revision_needed", "truthy": true },
-            "actions": [{ "op": "emit", "event": "ch01-super-revise" }] }
+          {
+            "id": "ch01-super-pass",
+            "to": "ch01_accept",
+            "when": {
+              "path": "revision_needed",
+              "equals": false
+            }
+          },
+          {
+            "id": "ch01-super-revise",
+            "to": "ch01_write",
+            "when": {
+              "path": "revision_needed",
+              "truthy": true
+            },
+            "actions": [
+              {
+                "op": "emit",
+                "event": "ch01-super-revise"
+              }
+            ]
+          }
         ]
       },
       {
@@ -452,183 +897,761 @@
         "type": "task",
         "description": "Accept Chapter 01: save to storage, update story bible, advance index",
         "on_enter": [
-          { "op": "set", "path": "step", "value": "accept" },
-          { "op": "inc", "path": "current_chapter", "by": 0 }
+          {
+            "op": "set",
+            "path": "step",
+            "value": "accept"
+          }
         ],
-        "parallel": { "resource": "chapter:01" },
+        "parallel": {
+          "resource": "chapter:01"
+        },
         "transitions": [
-          { "id": "ch01-accept-next", "to": "decide_chapter_done" }
+          {
+            "id": "ch01-accept-next",
+            "to": "decide_chapter_done"
+          }
         ]
       },
-
       "=== Chapter 02 ===",
-
-      { "id": "ch02_write", "type": "task", "description": "Write Chapter 02: Escalation",
-        "on_enter": [{ "op": "set", "path": "current_chapter", "value": 2 }, { "op": "set", "path": "step", "value": "write" }, { "op": "inc", "path": "chapter_loop_count", "by": 1 }],
-        "parallel": { "resource": "chapter:02" },
-        "transitions": [{ "id": "ch02-write-ok", "to": "ch02_val" }] },
-      { "id": "ch02_val", "type": "task", "description": "Validate Chapter 02",
-        "parallel": { "resource": "chapter:02" },
-        "transitions": [{ "id": "ch02-val-ok", "to": "ch02_fb" }] },
-      { "id": "ch02_fb", "type": "task", "description": "Chapter 02 feedback",
-        "parallel": { "resource": "chapter:02" },
-        "transitions": [{ "id": "ch02-fb-ok", "to": "ch02_fb_proc" }] },
-      { "id": "ch02_fb_proc", "type": "task", "description": "Process Chapter 02 feedback",
-        "parallel": { "resource": "chapter:02" },
-        "transitions": [{ "id": "ch02-fb-proc-ok", "to": "decide_ch02_fb" }] },
-      { "id": "decide_ch02_fb", "type": "decision", "description": "Route: continue→eval, retry→rewrite",
+      {
+        "id": "ch02_write",
+        "type": "task",
+        "description": "Write Chapter 02: Escalation",
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_chapter",
+            "value": 2
+          },
+          {
+            "op": "set",
+            "path": "step",
+            "value": "write"
+          },
+          {
+            "op": "inc",
+            "path": "chapter_loop_count",
+            "by": 1
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:02"
+        },
         "transitions": [
-          { "id": "ch02-fb-eval", "to": "ch02_eval", "when": { "path": "action", "equals": "continue" } },
-          { "id": "ch02-fb-retry", "to": "ch02_write", "when": { "path": "action", "equals": "retry" } }] },
-      { "id": "ch02_eval", "type": "task", "description": "Evaluate Chapter 02",
-        "parallel": { "resource": "chapter:02" },
-        "transitions": [{ "id": "ch02-eval-ok", "to": "ch02_eval_val" }] },
-      { "id": "ch02_eval_val", "type": "task", "description": "Validate Chapter 02 evaluation",
-        "parallel": { "resource": "chapter:02" },
-        "transitions": [{ "id": "ch02-eval-val-ok", "to": "decide_ch02_eval" }] },
-      { "id": "decide_ch02_eval", "type": "decision", "description": "Route: deep→super, fast→accept, revise→rewrite",
+          {
+            "id": "ch02-write-ok",
+            "to": "ch02_val"
+          }
+        ]
+      },
+      {
+        "id": "ch02_val",
+        "type": "task",
+        "description": "Validate Chapter 02",
+        "parallel": {
+          "resource": "chapter:02"
+        },
         "transitions": [
-          { "id": "ch02-eval-super", "to": "ch02_super", "when": { "path": "evaluation_mode", "equals": "deep" } },
-          { "id": "ch02-eval-fast", "to": "ch02_accept", "when": { "path": "evaluation_mode", "equals": "fast" } },
-          { "id": "ch02-eval-revise", "to": "ch02_write", "when": { "path": "action", "equals": "revise" } }] },
-      { "id": "ch02_super", "type": "task", "description": "Supervisor review Chapter 02",
-        "parallel": { "resource": "chapter:02" },
-        "transitions": [{ "id": "ch02-super-ok", "to": "decide_ch02_super" }] },
-      { "id": "decide_ch02_super", "type": "decision", "description": "Route: pass→accept, revise→rewrite",
+          {
+            "id": "ch02-val-ok",
+            "to": "ch02_fb"
+          }
+        ]
+      },
+      {
+        "id": "ch02_fb",
+        "type": "task",
+        "description": "Chapter 02 feedback",
+        "parallel": {
+          "resource": "chapter:02"
+        },
         "transitions": [
-          { "id": "ch02-super-pass", "to": "ch02_accept", "when": { "path": "revision_needed", "equals": false } },
-          { "id": "ch02-super-revise", "to": "ch02_write", "when": { "path": "revision_needed", "truthy": true } }] },
-      { "id": "ch02_accept", "type": "task", "description": "Accept Chapter 02",
-        "parallel": { "resource": "chapter:02" },
-        "transitions": [{ "id": "ch02-accept-next", "to": "decide_chapter_done" }] },
-
+          {
+            "id": "ch02-fb-ok",
+            "to": "ch02_fb_proc"
+          }
+        ]
+      },
+      {
+        "id": "ch02_fb_proc",
+        "type": "task",
+        "description": "Process Chapter 02 feedback",
+        "parallel": {
+          "resource": "chapter:02"
+        },
+        "transitions": [
+          {
+            "id": "ch02-fb-proc-ok",
+            "to": "decide_ch02_fb"
+          }
+        ]
+      },
+      {
+        "id": "decide_ch02_fb",
+        "type": "decision",
+        "description": "Route: continue→eval, retry→rewrite",
+        "transitions": [
+          {
+            "id": "ch02-fb-eval",
+            "to": "ch02_eval",
+            "when": {
+              "path": "action",
+              "equals": "continue"
+            }
+          },
+          {
+            "id": "ch02-fb-retry",
+            "to": "ch02_write",
+            "when": {
+              "path": "action",
+              "equals": "retry"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ch02_eval",
+        "type": "task",
+        "description": "Evaluate Chapter 02",
+        "parallel": {
+          "resource": "chapter:02"
+        },
+        "transitions": [
+          {
+            "id": "ch02-eval-ok",
+            "to": "ch02_eval_val"
+          }
+        ]
+      },
+      {
+        "id": "ch02_eval_val",
+        "type": "task",
+        "description": "Validate Chapter 02 evaluation",
+        "parallel": {
+          "resource": "chapter:02"
+        },
+        "transitions": [
+          {
+            "id": "ch02-eval-val-ok",
+            "to": "decide_ch02_eval"
+          }
+        ]
+      },
+      {
+        "id": "decide_ch02_eval",
+        "type": "decision",
+        "description": "Route: deep→super, fast→accept, revise→rewrite",
+        "transitions": [
+          {
+            "id": "ch02-eval-super",
+            "to": "ch02_super",
+            "when": {
+              "path": "evaluation_mode",
+              "equals": "deep"
+            }
+          },
+          {
+            "id": "ch02-eval-fast",
+            "to": "ch02_accept",
+            "when": {
+              "path": "evaluation_mode",
+              "equals": "fast"
+            }
+          },
+          {
+            "id": "ch02-eval-revise",
+            "to": "ch02_write",
+            "when": {
+              "path": "action",
+              "equals": "revise"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ch02_super",
+        "type": "task",
+        "description": "Supervisor review Chapter 02",
+        "parallel": {
+          "resource": "chapter:02"
+        },
+        "transitions": [
+          {
+            "id": "ch02-super-ok",
+            "to": "decide_ch02_super"
+          }
+        ]
+      },
+      {
+        "id": "decide_ch02_super",
+        "type": "decision",
+        "description": "Route: pass→accept, revise→rewrite",
+        "transitions": [
+          {
+            "id": "ch02-super-pass",
+            "to": "ch02_accept",
+            "when": {
+              "path": "revision_needed",
+              "equals": false
+            }
+          },
+          {
+            "id": "ch02-super-revise",
+            "to": "ch02_write",
+            "when": {
+              "path": "revision_needed",
+              "truthy": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "ch02_accept",
+        "type": "task",
+        "description": "Accept Chapter 02",
+        "parallel": {
+          "resource": "chapter:02"
+        },
+        "transitions": [
+          {
+            "id": "ch02-accept-next",
+            "to": "decide_chapter_done"
+          }
+        ]
+      },
       "=== Chapter 03 ===",
-
-      { "id": "ch03_write", "type": "task", "description": "Write Chapter 03: Reversal",
-        "on_enter": [{ "op": "set", "path": "current_chapter", "value": 3 }, { "op": "inc", "path": "chapter_loop_count", "by": 1 }],
-        "parallel": { "resource": "chapter:03" },
-        "transitions": [{ "id": "ch03-write-ok", "to": "ch03_val" }] },
-      { "id": "ch03_val", "type": "task", "description": "Validate Chapter 03",
-        "parallel": { "resource": "chapter:03" },
-        "transitions": [{ "id": "ch03-val-ok", "to": "ch03_eval" }] },
-      { "id": "ch03_eval", "type": "task", "description": "Evaluate Chapter 03",
-        "parallel": { "resource": "chapter:03" },
-        "transitions": [{ "id": "ch03-eval-ok", "to": "ch03_eval_val" }] },
-      { "id": "ch03_eval_val", "type": "task", "description": "Validate Chapter 03 evaluation",
-        "parallel": { "resource": "chapter:03" },
-        "transitions": [{ "id": "ch03-eval-val-ok", "to": "decide_ch03_eval" }] },
-      { "id": "decide_ch03_eval", "type": "decision", "description": "Route: deep→super, fast→accept, revise→rewrite",
+      {
+        "id": "ch03_write",
+        "type": "task",
+        "description": "Write Chapter 03: Reversal",
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_chapter",
+            "value": 3
+          },
+          {
+            "op": "inc",
+            "path": "chapter_loop_count",
+            "by": 1
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:03"
+        },
         "transitions": [
-          { "id": "ch03-eval-super", "to": "ch03_super", "when": { "path": "evaluation_mode", "equals": "deep" } },
-          { "id": "ch03-eval-fast", "to": "ch03_accept", "when": { "path": "evaluation_mode", "equals": "fast" } },
-          { "id": "ch03-eval-revise", "to": "ch03_write", "when": { "path": "action", "equals": "revise" } }] },
-      { "id": "ch03_super", "type": "task", "description": "Supervisor review Chapter 03",
-        "parallel": { "resource": "chapter:03" },
-        "transitions": [{ "id": "ch03-super-ok", "to": "decide_ch03_super" }] },
-      { "id": "decide_ch03_super", "type": "decision", "description": "Route: pass→accept, revise→rewrite",
+          {
+            "id": "ch03-write-ok",
+            "to": "ch03_val"
+          }
+        ]
+      },
+      {
+        "id": "ch03_val",
+        "type": "task",
+        "description": "Validate Chapter 03",
+        "parallel": {
+          "resource": "chapter:03"
+        },
         "transitions": [
-          { "id": "ch03-super-pass", "to": "ch03_accept", "when": { "path": "revision_needed", "equals": false } },
-          { "id": "ch03-super-revise", "to": "ch03_write", "when": { "path": "revision_needed", "truthy": true } }] },
-      { "id": "ch03_accept", "type": "task", "description": "Accept Chapter 03",
-        "parallel": { "resource": "chapter:03" },
-        "transitions": [{ "id": "ch03-accept-next", "to": "decide_chapter_done" }] },
-
+          {
+            "id": "ch03-val-ok",
+            "to": "ch03_eval"
+          }
+        ]
+      },
+      {
+        "id": "ch03_eval",
+        "type": "task",
+        "description": "Evaluate Chapter 03",
+        "parallel": {
+          "resource": "chapter:03"
+        },
+        "transitions": [
+          {
+            "id": "ch03-eval-ok",
+            "to": "ch03_eval_val"
+          }
+        ]
+      },
+      {
+        "id": "ch03_eval_val",
+        "type": "task",
+        "description": "Validate Chapter 03 evaluation",
+        "parallel": {
+          "resource": "chapter:03"
+        },
+        "transitions": [
+          {
+            "id": "ch03-eval-val-ok",
+            "to": "decide_ch03_eval"
+          }
+        ]
+      },
+      {
+        "id": "decide_ch03_eval",
+        "type": "decision",
+        "description": "Route: deep→super, fast→accept, revise→rewrite",
+        "transitions": [
+          {
+            "id": "ch03-eval-super",
+            "to": "ch03_super",
+            "when": {
+              "path": "evaluation_mode",
+              "equals": "deep"
+            }
+          },
+          {
+            "id": "ch03-eval-fast",
+            "to": "ch03_accept",
+            "when": {
+              "path": "evaluation_mode",
+              "equals": "fast"
+            }
+          },
+          {
+            "id": "ch03-eval-revise",
+            "to": "ch03_write",
+            "when": {
+              "path": "action",
+              "equals": "revise"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ch03_super",
+        "type": "task",
+        "description": "Supervisor review Chapter 03",
+        "parallel": {
+          "resource": "chapter:03"
+        },
+        "transitions": [
+          {
+            "id": "ch03-super-ok",
+            "to": "decide_ch03_super"
+          }
+        ]
+      },
+      {
+        "id": "decide_ch03_super",
+        "type": "decision",
+        "description": "Route: pass→accept, revise→rewrite",
+        "transitions": [
+          {
+            "id": "ch03-super-pass",
+            "to": "ch03_accept",
+            "when": {
+              "path": "revision_needed",
+              "equals": false
+            }
+          },
+          {
+            "id": "ch03-super-revise",
+            "to": "ch03_write",
+            "when": {
+              "path": "revision_needed",
+              "truthy": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "ch03_accept",
+        "type": "task",
+        "description": "Accept Chapter 03",
+        "parallel": {
+          "resource": "chapter:03"
+        },
+        "transitions": [
+          {
+            "id": "ch03-accept-next",
+            "to": "decide_chapter_done"
+          }
+        ]
+      },
       "=== Chapter 04 ===",
-
-      { "id": "ch04_write", "type": "task", "description": "Write Chapter 04: Confrontation",
-        "on_enter": [{ "op": "set", "path": "current_chapter", "value": 4 }, { "op": "inc", "path": "chapter_loop_count", "by": 1 }],
-        "parallel": { "resource": "chapter:04" },
-        "transitions": [{ "id": "ch04-write-ok", "to": "ch04_val" }] },
-      { "id": "ch04_val", "type": "task", "description": "Validate Chapter 04",
-        "parallel": { "resource": "chapter:04" },
-        "transitions": [{ "id": "ch04-val-ok", "to": "ch04_eval" }] },
-      { "id": "ch04_eval", "type": "task", "description": "Evaluate Chapter 04",
-        "parallel": { "resource": "chapter:04" },
-        "transitions": [{ "id": "ch04-eval-ok", "to": "ch04_eval_val" }] },
-      { "id": "ch04_eval_val", "type": "task", "description": "Validate Chapter 04 evaluation",
-        "parallel": { "resource": "chapter:04" },
-        "transitions": [{ "id": "ch04-eval-val-ok", "to": "decide_ch04_eval" }] },
-      { "id": "decide_ch04_eval", "type": "decision", "description": "Route: deep→super, fast→accept, revise→rewrite",
+      {
+        "id": "ch04_write",
+        "type": "task",
+        "description": "Write Chapter 04: Confrontation",
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_chapter",
+            "value": 4
+          },
+          {
+            "op": "inc",
+            "path": "chapter_loop_count",
+            "by": 1
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:04"
+        },
         "transitions": [
-          { "id": "ch04-eval-super", "to": "ch04_super", "when": { "path": "evaluation_mode", "equals": "deep" } },
-          { "id": "ch04-eval-fast", "to": "ch04_accept", "when": { "path": "evaluation_mode", "equals": "fast" } },
-          { "id": "ch04-eval-revise", "to": "ch04_write", "when": { "path": "action", "equals": "revise" } }] },
-      { "id": "ch04_super", "type": "task", "description": "Supervisor review Chapter 04",
-        "parallel": { "resource": "chapter:04" },
-        "transitions": [{ "id": "ch04-super-ok", "to": "decide_ch04_super" }] },
-      { "id": "decide_ch04_super", "type": "decision", "description": "Route: pass→accept, revise→rewrite",
+          {
+            "id": "ch04-write-ok",
+            "to": "ch04_val"
+          }
+        ]
+      },
+      {
+        "id": "ch04_val",
+        "type": "task",
+        "description": "Validate Chapter 04",
+        "parallel": {
+          "resource": "chapter:04"
+        },
         "transitions": [
-          { "id": "ch04-super-pass", "to": "ch04_accept", "when": { "path": "revision_needed", "equals": false } },
-          { "id": "ch04-super-revise", "to": "ch04_write", "when": { "path": "revision_needed", "truthy": true } }] },
-      { "id": "ch04_accept", "type": "task", "description": "Accept Chapter 04",
-        "parallel": { "resource": "chapter:04" },
-        "transitions": [{ "id": "ch04-accept-next", "to": "decide_chapter_done" }] },
-
+          {
+            "id": "ch04-val-ok",
+            "to": "ch04_eval"
+          }
+        ]
+      },
+      {
+        "id": "ch04_eval",
+        "type": "task",
+        "description": "Evaluate Chapter 04",
+        "parallel": {
+          "resource": "chapter:04"
+        },
+        "transitions": [
+          {
+            "id": "ch04-eval-ok",
+            "to": "ch04_eval_val"
+          }
+        ]
+      },
+      {
+        "id": "ch04_eval_val",
+        "type": "task",
+        "description": "Validate Chapter 04 evaluation",
+        "parallel": {
+          "resource": "chapter:04"
+        },
+        "transitions": [
+          {
+            "id": "ch04-eval-val-ok",
+            "to": "decide_ch04_eval"
+          }
+        ]
+      },
+      {
+        "id": "decide_ch04_eval",
+        "type": "decision",
+        "description": "Route: deep→super, fast→accept, revise→rewrite",
+        "transitions": [
+          {
+            "id": "ch04-eval-super",
+            "to": "ch04_super",
+            "when": {
+              "path": "evaluation_mode",
+              "equals": "deep"
+            }
+          },
+          {
+            "id": "ch04-eval-fast",
+            "to": "ch04_accept",
+            "when": {
+              "path": "evaluation_mode",
+              "equals": "fast"
+            }
+          },
+          {
+            "id": "ch04-eval-revise",
+            "to": "ch04_write",
+            "when": {
+              "path": "action",
+              "equals": "revise"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ch04_super",
+        "type": "task",
+        "description": "Supervisor review Chapter 04",
+        "parallel": {
+          "resource": "chapter:04"
+        },
+        "transitions": [
+          {
+            "id": "ch04-super-ok",
+            "to": "decide_ch04_super"
+          }
+        ]
+      },
+      {
+        "id": "decide_ch04_super",
+        "type": "decision",
+        "description": "Route: pass→accept, revise→rewrite",
+        "transitions": [
+          {
+            "id": "ch04-super-pass",
+            "to": "ch04_accept",
+            "when": {
+              "path": "revision_needed",
+              "equals": false
+            }
+          },
+          {
+            "id": "ch04-super-revise",
+            "to": "ch04_write",
+            "when": {
+              "path": "revision_needed",
+              "truthy": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "ch04_accept",
+        "type": "task",
+        "description": "Accept Chapter 04",
+        "parallel": {
+          "resource": "chapter:04"
+        },
+        "transitions": [
+          {
+            "id": "ch04-accept-next",
+            "to": "decide_chapter_done"
+          }
+        ]
+      },
       "=== Chapter 05 ===",
-
-      { "id": "ch05_write", "type": "task", "description": "Write Chapter 05: Resolution",
-        "on_enter": [{ "op": "set", "path": "current_chapter", "value": 5 }, { "op": "inc", "path": "chapter_loop_count", "by": 1 }],
-        "parallel": { "resource": "chapter:05" },
-        "transitions": [{ "id": "ch05-write-ok", "to": "ch05_val" }] },
-      { "id": "ch05_val", "type": "task", "description": "Validate Chapter 05",
-        "parallel": { "resource": "chapter:05" },
-        "transitions": [{ "id": "ch05-val-ok", "to": "ch05_eval" }] },
-      { "id": "ch05_eval", "type": "task", "description": "Evaluate Chapter 05",
-        "parallel": { "resource": "chapter:05" },
-        "transitions": [{ "id": "ch05-eval-ok", "to": "ch05_eval_val" }] },
-      { "id": "ch05_eval_val", "type": "task", "description": "Validate Chapter 05 evaluation",
-        "parallel": { "resource": "chapter:05" },
-        "transitions": [{ "id": "ch05-eval-val-ok", "to": "decide_ch05_eval" }] },
-      { "id": "decide_ch05_eval", "type": "decision", "description": "Route: deep→super, fast→accept, revise→rewrite",
+      {
+        "id": "ch05_write",
+        "type": "task",
+        "description": "Write Chapter 05: Resolution",
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_chapter",
+            "value": 5
+          },
+          {
+            "op": "inc",
+            "path": "chapter_loop_count",
+            "by": 1
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:05"
+        },
         "transitions": [
-          { "id": "ch05-eval-super", "to": "ch05_super", "when": { "path": "evaluation_mode", "equals": "deep" } },
-          { "id": "ch05-eval-fast", "to": "ch05_accept", "when": { "path": "evaluation_mode", "equals": "fast" } },
-          { "id": "ch05-eval-revise", "to": "ch05_write", "when": { "path": "action", "equals": "revise" } }] },
-      { "id": "ch05_super", "type": "task", "description": "Supervisor review Chapter 05",
-        "parallel": { "resource": "chapter:05" },
-        "transitions": [{ "id": "ch05-super-ok", "to": "decide_ch05_super" }] },
-      { "id": "decide_ch05_super", "type": "decision", "description": "Route: pass→accept, revise→rewrite",
+          {
+            "id": "ch05-write-ok",
+            "to": "ch05_val"
+          }
+        ]
+      },
+      {
+        "id": "ch05_val",
+        "type": "task",
+        "description": "Validate Chapter 05",
+        "parallel": {
+          "resource": "chapter:05"
+        },
         "transitions": [
-          { "id": "ch05-super-pass", "to": "ch05_accept", "when": { "path": "revision_needed", "equals": false } },
-          { "id": "ch05-super-revise", "to": "ch05_write", "when": { "path": "revision_needed", "truthy": true } }] },
-      { "id": "ch05_accept", "type": "task", "description": "Accept Chapter 05 (final chapter)",
-        "parallel": { "resource": "chapter:05" },
-        "transitions": [{ "id": "ch05-accept-next", "to": "decide_chapter_done" }] },
-
+          {
+            "id": "ch05-val-ok",
+            "to": "ch05_eval"
+          }
+        ]
+      },
+      {
+        "id": "ch05_eval",
+        "type": "task",
+        "description": "Evaluate Chapter 05",
+        "parallel": {
+          "resource": "chapter:05"
+        },
+        "transitions": [
+          {
+            "id": "ch05-eval-ok",
+            "to": "ch05_eval_val"
+          }
+        ]
+      },
+      {
+        "id": "ch05_eval_val",
+        "type": "task",
+        "description": "Validate Chapter 05 evaluation",
+        "parallel": {
+          "resource": "chapter:05"
+        },
+        "transitions": [
+          {
+            "id": "ch05-eval-val-ok",
+            "to": "decide_ch05_eval"
+          }
+        ]
+      },
+      {
+        "id": "decide_ch05_eval",
+        "type": "decision",
+        "description": "Route: deep→super, fast→accept, revise→rewrite",
+        "transitions": [
+          {
+            "id": "ch05-eval-super",
+            "to": "ch05_super",
+            "when": {
+              "path": "evaluation_mode",
+              "equals": "deep"
+            }
+          },
+          {
+            "id": "ch05-eval-fast",
+            "to": "ch05_accept",
+            "when": {
+              "path": "evaluation_mode",
+              "equals": "fast"
+            }
+          },
+          {
+            "id": "ch05-eval-revise",
+            "to": "ch05_write",
+            "when": {
+              "path": "action",
+              "equals": "revise"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ch05_super",
+        "type": "task",
+        "description": "Supervisor review Chapter 05",
+        "parallel": {
+          "resource": "chapter:05"
+        },
+        "transitions": [
+          {
+            "id": "ch05-super-ok",
+            "to": "decide_ch05_super"
+          }
+        ]
+      },
+      {
+        "id": "decide_ch05_super",
+        "type": "decision",
+        "description": "Route: pass→accept, revise→rewrite",
+        "transitions": [
+          {
+            "id": "ch05-super-pass",
+            "to": "ch05_accept",
+            "when": {
+              "path": "revision_needed",
+              "equals": false
+            }
+          },
+          {
+            "id": "ch05-super-revise",
+            "to": "ch05_write",
+            "when": {
+              "path": "revision_needed",
+              "truthy": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "ch05_accept",
+        "type": "task",
+        "description": "Accept Chapter 05 (final chapter)",
+        "parallel": {
+          "resource": "chapter:05"
+        },
+        "transitions": [
+          {
+            "id": "ch05-accept-next",
+            "to": "decide_chapter_done"
+          }
+        ]
+      },
       "============================ PHASE 4: CHAPTER LOOP CONTROL ============================",
-
       {
         "id": "decide_chapter_done",
         "type": "decision",
         "description": "Check if all chapters are complete. Route: continue→next chapter or success.",
         "on_enter": [],
         "transitions": [
-          { "id": "done-ch02", "to": "ch02_write",
-            "when": { "path": "current_chapter", "equals": 1 } },
-          { "id": "done-ch03", "to": "ch03_write",
-            "when": { "path": "current_chapter", "equals": 2 } },
-          { "id": "done-ch04", "to": "ch04_write",
-            "when": { "path": "current_chapter", "equals": 3 } },
-          { "id": "done-ch05", "to": "ch05_write",
-            "when": { "path": "current_chapter", "equals": 4 } },
-          { "id": "all-done", "to": "success",
-            "when": { "path": "current_chapter", "gte": 5 } },
-          { "id": "loop-max", "to": "failure",
-            "when": { "path": "chapter_loop_count", "gte": 25 },
-            "actions": [{ "op": "emit", "event": "max-chapter-loops" }] }
+          {
+            "id": "done-ch02",
+            "to": "ch02_write",
+            "when": {
+              "path": "current_chapter",
+              "equals": 1
+            }
+          },
+          {
+            "id": "done-ch03",
+            "to": "ch03_write",
+            "when": {
+              "path": "current_chapter",
+              "equals": 2
+            }
+          },
+          {
+            "id": "done-ch04",
+            "to": "ch04_write",
+            "when": {
+              "path": "current_chapter",
+              "equals": 3
+            }
+          },
+          {
+            "id": "done-ch05",
+            "to": "ch05_write",
+            "when": {
+              "path": "current_chapter",
+              "equals": 4
+            }
+          },
+          {
+            "id": "all-done",
+            "to": "success",
+            "when": {
+              "path": "current_chapter",
+              "gte": 5
+            }
+          },
+          {
+            "id": "loop-max",
+            "to": "failure",
+            "when": {
+              "path": "chapter_loop_count",
+              "gte": 25
+            },
+            "actions": [
+              {
+                "op": "emit",
+                "event": "max-chapter-loops"
+              }
+            ]
+          }
         ]
       },
-
       "============================ TERMINAL STATES ============================",
-
       {
         "id": "success",
         "type": "terminal",
         "terminal": true,
         "description": "All chapters written, evaluated, and accepted",
         "on_enter": [
-          { "op": "emit", "event": "novel-complete" },
-          { "op": "set", "path": "result", "value": "小说创作流程完成" }
+          {
+            "op": "emit",
+            "event": "novel-complete"
+          },
+          {
+            "op": "set",
+            "path": "result",
+            "value": "小说创作流程完成"
+          }
         ],
         "transitions": []
       },
@@ -638,11 +1661,19 @@
         "terminal": true,
         "description": "Pipeline failed — max attempts exceeded or blocked",
         "on_enter": [
-          { "op": "emit", "event": "novel-failed" },
-          { "op": "set", "path": "result", "value": "生成失败" }
+          {
+            "op": "emit",
+            "event": "novel-failed"
+          },
+          {
+            "op": "set",
+            "path": "result",
+            "value": "生成失败"
+          }
         ],
         "transitions": []
       }
     ]
-  }
+  },
+  "validators": []
 }
