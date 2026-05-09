@@ -1,4 +1,4 @@
-# tns-noval
+# tns-novel
 
 Token Never Sleeps Novel Writing Template.
 

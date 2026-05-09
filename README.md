@@ -1,6 +1,6 @@
-# tns-noval
+# tns-novel
 
-`tns-noval` is a Token Never Sleeps novel-writing template. It is a TNS
+`tns-novel` is a Token Never Sleeps novel-writing template. It is a TNS
 case/reference workspace, not an independent npm package.
 
 The complete novel-writing pipeline is defined as a **TNS FSM program** in
@@ -18,8 +18,8 @@ tns --version
 ## Run With TNS
 
 ```bash
-git clone https://github.com/HuiCir/tns-noval.git
-cd tns-noval
+git clone https://github.com/HuiCir/tns-novel.git
+cd tns-novel
 tns init --workspace "$PWD" --task task.md --runner direct --dashboard
 tns compile
 tns doctor
