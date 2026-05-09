@@ -65,7 +65,7 @@
   },
   "attempts": { "max_attempts_per_section": 3 },
   "preflight": {
-    "required_files": ["scripts/check_novel.js","task.md"],
+    "required_files": ["task.md"],
     "required_directories": [".tns","draft/chapters","story_bible"]
   },
   "command_bridge": {
@@ -82,8 +82,8 @@
         "id": "check-novel-continuity",
         "timing": "post_step",
         "section_ids": ["sec-003","sec-005","sec-006","sec-007","sec-008","sec-009","sec-010"],
-        "command": "node scripts/check_novel.js",
-        "description": "Run novel consistency check after each content-producing step"
+        "command": "node skills/novel-check/check_novel.js",
+        "description": "Run novel continuity check via novel-check skill after each content-producing step"
       }
     ]
   },
@@ -115,15 +115,45 @@
       "gc_after_run": true, "max_runtime_seconds": 600, "max_parallel": 2
     }
   },
-  "externals": { "tools": [], "skills": [], "mcp": [] },
-  "skillbases": { "use_default_sources": true, "sources": [], "selection": { "mode": "explicit", "max_matches_per_section": 2, "min_score": 0.22, "verifier_mode": "none" } },
+  "externals": {
+    "tools": [],
+    "skills": [
+      {
+        "name": "novel-check",
+        "required": true,
+        "purpose": "Continuity validation for novel story bible and chapter drafts",
+        "source_kind": "skills_dir",
+        "source_path": "skills/novel-check"
+      },
+      {
+        "name": "novel-fsm-demo",
+        "required": false,
+        "purpose": "Dry-run FSM pipeline validation before live execution",
+        "source_kind": "skills_dir",
+        "source_path": "skills/novel-fsm-demo"
+      }
+    ],
+    "mcp": []
+  },
+  "skillbases": {
+    "use_default_sources": true,
+    "sources": [
+      {
+        "path": "skills",
+        "kind": "skills_dir",
+        "enabled": true,
+        "priority": 1
+      }
+    ],
+    "selection": { "mode": "explicit", "max_matches_per_section": 2, "min_score": 0.22, "verifier_mode": "none" }
+  },
   "injections": {
     "default_profile": null,
     "profiles": {
       "compiler": { "skills": ["tns-program-compiler"], "description": "Compiler skill for compile synthesis passes." },
       "planner": { "skills": ["tns-task-planner"], "description": "Planner skill for task quality and task.md planning passes." },
-      "executor_task": { "skills": [], "description": "Executor-only task skills." },
-      "verifier_audit": { "skills": [], "description": "Verifier-only audit skills." }
+      "executor_task": { "skills": ["novel-check"], "description": "Executor skills: novel continuity validation." },
+      "verifier_audit": { "skills": ["novel-check"], "description": "Verifier skills: novel continuity audit." }
     },
     "rules": [
       { "match_mode": "compile", "profile": "compiler" },
@@ -156,7 +186,6 @@
         "id": "sec-002",
         "type": "task",
         "description": "Global protocol for all sections",
-        "on_enter": [],
         "transitions": [{ "to": "sec-003" }]
       },
       {
@@ -177,7 +206,6 @@
         "id": "sec-005",
         "type": "task",
         "description": "Character review & finalization",
-        "on_enter": [],
         "transitions": [{ "to": "sec-006" }]
       },
       {
@@ -218,28 +246,6 @@
         "description": "Chapter 05: Resolution — escape, transformation, open ending",
         "on_enter": [{ "op": "set", "path": "current_chapter", "value": 5 }],
         "parallel": { "resource": "chapter:05" },
-        "transitions": [{ "to": "success" }]
-      },
-      {
-        "id": "success",
-        "type": "terminal",
-        "terminal": true,
-        "description": "All sections complete",
-        "on_enter": [
-          { "op": "emit", "event": "pipeline-complete" },
-          { "op": "set", "path": "result", "value": "done" }
-        ],
-        "transitions": []
-      },
-      {
-        "id": "failure",
-        "type": "terminal",
-        "terminal": true,
-        "description": "Pipeline failed — max loops exceeded",
-        "on_enter": [
-          { "op": "emit", "event": "pipeline-failed" },
-          { "op": "set", "path": "result", "value": "failed" }
-        ],
         "transitions": []
       }
     ]

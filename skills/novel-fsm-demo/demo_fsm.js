@@ -9,7 +9,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const WORKSPACE = resolve(__dirname, "..");
+const WORKSPACE = resolve(__dirname, "../..");
 const CONFIG_PATH = resolve(WORKSPACE, "tns_config.json");
 const SECTIONS_PATH = resolve(WORKSPACE, ".tns", "sections.json");
 const HANDOFF_PATH = resolve(WORKSPACE, ".tns", "handoff.md");
@@ -123,9 +123,6 @@ async function main() {
         last_summary: `${state.description?.slice(0, 35) || "OK"} ✓`,
         attempts: 1,
       });
-    } else if (state.type === "terminal") {
-      console.log(`\n  ${icon} ${currentId}: ${state.description || ""}`);
-      break;
     } else {
       console.log(`  ${icon} [${String(steps).padStart(3)}] ${currentId.padEnd(12)} | routing`);
     }
