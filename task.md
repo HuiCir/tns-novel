@@ -77,9 +77,7 @@ Acceptance criteria:
 
 ---
 
-## Chapter Pipeline (sec-006 ~ sec-010)
-
-Each chapter section follows the same executor→verifier pattern:
+Each chapter section (sec-006 ~ sec-010) follows the same executor→verifier pattern:
 1. Read all story bible files and previous chapters.
 2. Write the chapter to `draft/chapters/chapter-0X.md`.
 3. Update story bible with chapter summary, entity changes, and character state.

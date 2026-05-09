@@ -33,8 +33,7 @@
           "tns",
           "claude",
           "wc",
-          "mkdir",
-          "test"
+          "mkdir"
         ],
         "workspace_only": true
       }
@@ -76,10 +75,31 @@
         "schema": "executor",
         "prompt_mode": "executor",
         "transitions": [
-          { "field": "outcome", "equals": "blocked", "set_status": "blocked", "summary_field": "summary", "review_field": "blocker", "end": true },
-          { "field": "clean_state", "equals": false, "set_status": "pending", "summary_field": "summary", "end": true },
-          { "field": "ready_for_verification", "equals": false, "set_status": "pending", "summary_field": "summary", "end": true },
-          { "next": "verifier" }
+          {
+            "field": "outcome",
+            "equals": "blocked",
+            "set_status": "blocked",
+            "summary_field": "summary",
+            "review_field": "blocker",
+            "end": true
+          },
+          {
+            "field": "clean_state",
+            "equals": false,
+            "set_status": "pending",
+            "summary_field": "summary",
+            "end": true
+          },
+          {
+            "field": "ready_for_verification",
+            "equals": false,
+            "set_status": "pending",
+            "summary_field": "summary",
+            "end": true
+          },
+          {
+            "next": "verifier"
+          }
         ]
       },
       {
@@ -88,16 +108,44 @@
         "schema": "verifier",
         "prompt_mode": "verifier",
         "transitions": [
-          { "field": "status", "equals": "pass", "set_status": "done", "summary_field": "summary", "review_value": "", "set_verified_at": true, "end": true },
-          { "field": "status", "in": ["fail","blocked"], "set_status": "needs_fix", "summary_field": "summary", "review_field": "review_note", "append_review": true, "end": true }
+          {
+            "field": "status",
+            "equals": "pass",
+            "set_status": "done",
+            "summary_field": "summary",
+            "review_value": "",
+            "set_verified_at": true,
+            "end": true
+          },
+          {
+            "field": "status",
+            "in": [
+              "fail",
+              "blocked"
+            ],
+            "set_status": "needs_fix",
+            "summary_field": "summary",
+            "review_field": "review_note",
+            "append_review": true,
+            "end": true
+          }
         ]
       }
     ]
   },
-  "attempts": { "max_attempts_per_section": 3 },
+  "attempts": {
+    "max_attempts_per_section": 3
+  },
   "preflight": {
-    "required_files": ["task.md"],
-    "required_directories": [".tns","draft/chapters","story_bible",".claude/skills/novel-check"]
+    "required_files": [
+      "task.md"
+    ],
+    "required_directories": [
+      ".claude/skills/novel-check",
+      ".tns",
+      "draft/chapters",
+      "story_bible"
+    ]
   },
   "validators": [
     {
@@ -120,57 +168,153 @@
       "kind": "file_exists",
       "path": "draft/chapters/chapter-05.md",
       "description": "final chapter exists (pipeline complete)"
+    },
+    {
+      "id": "story-bible-outline",
+      "stage": "post_run",
+      "kind": "file_exists",
+      "path": "story_bible/outline.md",
+      "description": "story outline exists"
+    },
+    {
+      "id": "chapter-01-exists",
+      "stage": "post_run",
+      "kind": "file_exists",
+      "path": "draft/chapters/chapter-01.md",
+      "description": "chapter 01 file exists"
+    },
+    {
+      "id": "chapter-02-exists",
+      "stage": "post_run",
+      "kind": "file_exists",
+      "path": "draft/chapters/chapter-02.md",
+      "description": "chapter 02 file exists"
+    },
+    {
+      "id": "chapter-03-exists",
+      "stage": "post_run",
+      "kind": "file_exists",
+      "path": "draft/chapters/chapter-03.md",
+      "description": "chapter 03 file exists"
+    },
+    {
+      "id": "chapter-04-exists",
+      "stage": "post_run",
+      "kind": "file_exists",
+      "path": "draft/chapters/chapter-04.md",
+      "description": "chapter 04 file exists"
+    },
+    {
+      "id": "chapter-05-exists",
+      "stage": "post_run",
+      "kind": "file_exists",
+      "path": "draft/chapters/chapter-05.md",
+      "description": "chapter 05 file exists (pipeline complete)"
     }
   ],
   "command_bridge": {
     "command_sets": {
       "check-continuity": {
         "id": "check-continuity",
-        "command": ["node", ".claude/skills/novel-check/check_novel.js"],
-        "timeout_seconds": 30,
-        "description": "validate novel continuity across story bible and chapter drafts"
+        "description": "validate novel continuity across story bible and chapter drafts",
+        "command": [
+          "node",
+          ".claude/skills/novel-check/check_novel.js"
+        ],
+        "commands": [],
+        "timeout_seconds": 30
       },
       "demo-fsm": {
         "id": "demo-fsm",
-        "command": ["node", ".claude/skills/novel-fsm-demo/demo_fsm.js", "--speed", "100", "--steps", "15"],
-        "timeout_seconds": 30,
-        "description": "dry-run FSM pipeline validation before live execution"
+        "description": "dry-run FSM pipeline validation before live execution",
+        "command": [
+          "node",
+          ".claude/skills/novel-fsm-demo/demo_fsm.js",
+          "--speed",
+          "100",
+          "--steps",
+          "15"
+        ],
+        "commands": [],
+        "timeout_seconds": 30
       }
     },
     "hooks": [
       {
         "id": "ensure-chapter-dir",
         "timing": "pre_step",
-        "section_ids": ["sec-006","sec-007","sec-008","sec-009","sec-010"],
+        "section_ids": [
+          "sec-006",
+          "sec-007",
+          "sec-008",
+          "sec-009",
+          "sec-010"
+        ],
         "command": "mkdir -p draft/chapters",
         "description": "ensure chapter output directory exists before any chapter write"
       },
       {
         "id": "check-novel-continuity",
         "timing": "post_step",
-        "section_ids": ["sec-003","sec-005","sec-006","sec-007","sec-008","sec-009","sec-010"],
+        "section_ids": [
+          "sec-003",
+          "sec-005",
+          "sec-006",
+          "sec-007",
+          "sec-008",
+          "sec-009",
+          "sec-010"
+        ],
         "command": "node .claude/skills/novel-check/check_novel.js",
         "description": "run novel continuity check via novel-check skill after each content-producing step"
       }
     ]
   },
   "policy": {
-    "preflight_failure": { "action": "block_section", "review_prefix": "Preflight failed" },
-    "command_failure": { "action": "mark_needs_fix", "review_prefix": "Command hook failed" },
-    "outside_workspace_violation": { "action": "block_section", "review_prefix": "Workspace boundary violation" },
+    "preflight_failure": {
+      "action": "block_section",
+      "review_prefix": "Preflight failed"
+    },
+    "command_failure": {
+      "action": "mark_needs_fix",
+      "review_prefix": "Command hook failed"
+    },
+    "outside_workspace_violation": {
+      "action": "block_section",
+      "review_prefix": "Workspace boundary violation"
+    },
     "validator_failure": {
-      "preflight": { "action": "block_section", "review_prefix": "Preflight validator failed" },
-      "pre_step": { "action": "mark_needs_fix", "review_prefix": "Pre-step validator failed" },
-      "post_step": { "action": "mark_needs_fix", "review_prefix": "Post-step validator failed" },
-      "post_run": { "action": "mark_needs_fix", "review_prefix": "Post-run validator failed" }
+      "preflight": {
+        "action": "block_section",
+        "review_prefix": "Preflight validator failed"
+      },
+      "pre_step": {
+        "action": "mark_needs_fix",
+        "review_prefix": "Pre-step validator failed"
+      },
+      "post_step": {
+        "action": "mark_needs_fix",
+        "review_prefix": "Post-step validator failed"
+      },
+      "post_run": {
+        "action": "mark_needs_fix",
+        "review_prefix": "Post-run validator failed"
+      }
+    },
+    "attempt_exhaustion": {
+      "action": "block_section",
+      "review_prefix": "Max attempts exhausted"
     }
   },
-  "outputs": { "write_section_outputs": true },
+  "outputs": {
+    "write_section_outputs": true
+  },
   "execution": {
     "long_running": {
       "agent": "tns-executor",
       "workspace": "primary",
       "persists_state": true,
+      "gc_after_run": false,
       "max_parallel": 2
     },
     "temporary": {
@@ -196,7 +340,7 @@
       {
         "name": "node",
         "required": true,
-        "purpose": "run continuity checker and FSM demo"
+        "purpose": "run continuity checker and FSM demo scripts"
       },
       {
         "name": "tns",
@@ -206,7 +350,7 @@
       {
         "name": "claude",
         "required": true,
-        "purpose": "Claude Code executor and verifier agent"
+        "purpose": "Claude Code executor and verifier agent invocations"
       }
     ],
     "skills": [
@@ -243,108 +387,233 @@
     "default_profile": null,
     "profiles": {
       "compiler": {
-        "skills": ["tns-program-compiler"],
+        "skills": [
+          "tns-program-compiler"
+        ],
         "description": "Compiler skill for compile synthesis passes."
       },
       "planner": {
-        "skills": ["tns-task-planner"],
+        "skills": [
+          "tns-task-planner"
+        ],
         "description": "Planner skill for task quality and task.md planning passes."
       },
       "executor_task": {
-        "skills": ["novel-check"],
+        "skills": [
+          "novel-check"
+        ],
         "description": "Executor skills: novel continuity validation injected into writing sections."
       },
       "verifier_audit": {
-        "skills": ["novel-check"],
+        "skills": [
+          "novel-check"
+        ],
         "description": "Verifier skills: independent continuity audit."
       }
     },
     "rules": [
-      { "match_mode": "compile", "profile": "compiler" },
-      { "match_mode": "plan", "profile": "planner" },
-      { "match_mode": "executor", "match_title": "Chapter 0", "profile": "executor_task" },
-      { "match_mode": "verifier", "profile": "verifier_audit" }
+      {
+        "match_mode": "compile",
+        "profile": "compiler"
+      },
+      {
+        "match_mode": "plan",
+        "profile": "planner"
+      },
+      {
+        "match_mode": "executor",
+        "match_title": "Chapter 0",
+        "profile": "executor_task"
+      },
+      {
+        "match_mode": "verifier",
+        "profile": "verifier_audit"
+      }
     ]
   },
-  "_program_from_compiled": false,
   "program": {
     "entry": "sec-001",
-    "threads": 2,
-    "parallel": { "mode": "auto", "max_threads": 2 },
+    "context": {},
     "states": [
       {
         "id": "sec-001",
         "type": "task",
         "description": "Story premise & world setting",
-        "on_enter": [{ "op": "set", "path": "phase", "value": "setup" }],
-        "transitions": [{ "to": "sec-002" }]
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "phase",
+            "value": "setup"
+          }
+        ],
+        "transitions": [
+          {
+            "to": "sec-002"
+          }
+        ]
       },
       {
         "id": "sec-002",
         "type": "task",
         "description": "Global protocol for all sections",
-        "transitions": [{ "to": "sec-003" }]
+        "transitions": [
+          {
+            "to": "sec-003"
+          }
+        ]
       },
       {
         "id": "sec-003",
         "type": "task",
         "description": "Story outline & act structure",
-        "on_enter": [{ "op": "set", "path": "phase", "value": "outline" }],
-        "transitions": [{ "to": "sec-004" }]
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "phase",
+            "value": "outline"
+          }
+        ],
+        "transitions": [
+          {
+            "to": "sec-004"
+          }
+        ]
       },
       {
         "id": "sec-004",
         "type": "task",
         "description": "Character profiles",
-        "on_enter": [{ "op": "set", "path": "phase", "value": "characters" }],
-        "transitions": [{ "to": "sec-005" }]
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "phase",
+            "value": "characters"
+          }
+        ],
+        "transitions": [
+          {
+            "to": "sec-005"
+          }
+        ]
       },
       {
         "id": "sec-005",
         "type": "task",
         "description": "Character review & finalization",
-        "transitions": [{ "to": "sec-006" }]
+        "transitions": [
+          {
+            "to": "sec-006"
+          }
+        ]
       },
       {
         "id": "sec-006",
         "type": "task",
         "description": "Chapter 01: Opening — establish world, inciting incident",
-        "on_enter": [{ "op": "set", "path": "current_chapter", "value": 1 }, { "op": "inc", "path": "loop_count", "by": 1 }],
-        "parallel": { "resource": "chapter:01" },
-        "transitions": [{ "to": "sec-007" }]
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_chapter",
+            "value": 1
+          },
+          {
+            "op": "inc",
+            "path": "loop_count",
+            "by": 1
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:01"
+        },
+        "transitions": [
+          {
+            "to": "sec-007"
+          }
+        ]
       },
       {
         "id": "sec-007",
         "type": "task",
         "description": "Chapter 02: Escalation — deepen mystery, raise stakes",
-        "on_enter": [{ "op": "set", "path": "current_chapter", "value": 2 }],
-        "parallel": { "resource": "chapter:02" },
-        "transitions": [{ "to": "sec-008" }]
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_chapter",
+            "value": 2
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:02"
+        },
+        "transitions": [
+          {
+            "to": "sec-008"
+          }
+        ]
       },
       {
         "id": "sec-008",
         "type": "task",
         "description": "Chapter 03: Reversal — truth revealed, loyalties shift",
-        "on_enter": [{ "op": "set", "path": "current_chapter", "value": 3 }],
-        "parallel": { "resource": "chapter:03" },
-        "transitions": [{ "to": "sec-009" }]
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_chapter",
+            "value": 3
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:03"
+        },
+        "transitions": [
+          {
+            "to": "sec-009"
+          }
+        ]
       },
       {
         "id": "sec-009",
         "type": "task",
         "description": "Chapter 04: Confrontation — climax, cost of truth",
-        "on_enter": [{ "op": "set", "path": "current_chapter", "value": 4 }],
-        "parallel": { "resource": "chapter:04" },
-        "transitions": [{ "to": "sec-010" }]
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_chapter",
+            "value": 4
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:04"
+        },
+        "transitions": [
+          {
+            "to": "sec-010"
+          }
+        ]
       },
       {
         "id": "sec-010",
         "type": "task",
+        "terminal": true,
         "description": "Chapter 05: Resolution — escape, transformation, open ending",
-        "on_enter": [{ "op": "set", "path": "current_chapter", "value": 5 }],
-        "parallel": { "resource": "chapter:05" },
+        "on_enter": [
+          {
+            "op": "set",
+            "path": "current_chapter",
+            "value": 5
+          }
+        ],
+        "parallel": {
+          "resource": "chapter:05"
+        },
         "transitions": []
       }
-    ]
+    ],
+    "max_steps": 100,
+    "threads": 2,
+    "parallel": {
+      "mode": "auto",
+      "max_threads": 2
+    }
   }
 }
