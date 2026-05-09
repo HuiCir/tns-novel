@@ -1,184 +1,171 @@
-# Novel Writing Task — 《猩红猎犬》
+# tns-noval
 
-## Story Premise
+Token Never Sleeps Novel Writing Template.
 
-在维多利亚风格的哥特都市"苍白城"，教会下属的"猎犬骑士团"以
-猎杀"血印女巫"为使命。女巫们身上浮现发光的猩红纹章——被称为
-"血印"——据说是被古神之血腐化的证据，必须被"净化"（火刑处死）。
-
-主角亚瑟是骑士团最锋利的猎犬之一，在一次追猎中追踪到一名身上刚
-浮现血印的少女莉维亚。但在将她交给教会之前，亚瑟发现了真相：
-所谓的"血印"并非诅咒，而是教会秘密施行的"圣血仪式"的副作用
-——教会高层将古神之血注射给无辜者，制造"女巫"以维系民众对教会
-的恐惧和依赖。莉维亚是某位教会高层政治清洗的牺牲品。
-
-亚瑟叛逃，带着莉维亚逃入苍白城地下的古老墓穴网络。在追逐中，
-他逐渐面对一个更深层的恐怖：古神的意识确实在血中苏醒，而教会
-的圣血仪式正在加速它的降临。猎人与猎物、净化与腐化、信仰与真相
-——所有边界都在黑暗中分崩离析。
-
-## Global Protocol
-
-每个写作章节必须遵循以下流程：
-- 阅读 `story_bible/` 下的所有文件和已完成章节，确保前后一致。
-- 更新世界观、角色状态、时间线和实体关系。
-- 将章节写入 `draft/chapters/chapter-0X.md`。
-- 将章节摘要和连续性交接写入 `story_bible/chapter_summaries.md`。
-- 运行 `node scripts/check_novel.js` 检查连续性。
+Current scope: write a five-chapter dark gothic novel via TNS FSM
+orchestration, with persistent story bible tracking and dashboard
+monitoring.
 
 ## sec-001: Story Premise & World Setting
 
-建立完整的故事世界观：
-- 苍白城的哥特都市设定：煤气灯、大教堂、地下墓穴网络
-- 猎犬骑士团的组织结构和猎杀仪式
-- "血印"与"圣血仪式"的设定
-- 古神之血的恐怖真相
+Objective: establish the complete story world before any writing begins.
 
-输出到 `story_bible/world.md`。
+Inputs: user story concept.
 
-验证标准（自然语言）：世界观是否具有内在一致性？设定是否足够
-独特以支撑一个完整的哥特恐怖故事？古神元素是否与维多利亚风格
-有机融合？
+Deliverables:
+- `story_bible/world.md` — era, geography, political landscape, belief system, tone.
+
+Acceptance criteria:
+- World has internal consistency and supports the full story arc.
+- Setting is distinctive enough to sustain gothic horror atmosphere.
+- Supernatural elements are organically integrated with the Victorian-style world.
 
 ## sec-002: Global Protocol
 
-确认所有章节的全局写作协议，包含阅读顺序、更新规则、验收标准。
+Objective: confirm the workflow protocol that every writing section must follow.
 
-验证标准：协议是否清晰可执行？检查脚本是否覆盖关键连续性节点？
+Inputs: task.md global protocol section.
+
+Deliverables: confirmed protocol embedded in executor context.
+
+Acceptance criteria:
+- Protocol is clear and executable.
+- Continuity check script covers all key checkpoints.
+- Story bible update rules are unambiguous.
 
 ## sec-003: Story Outline
 
-完成三幕结构大纲和角色弧线设计。
+Objective: define the act structure and character arcs before writing.
 
-输出到 `story_bible/outline.md`。
+Inputs: `story_bible/world.md`.
 
-验证标准：大纲是否形成完整的因果链？每个角色的弧线是否有明确的
-起点、转折和终点？五章结构是否能容纳故事的全部核心冲突？
+Deliverables:
+- `story_bible/outline.md` — act breakdown, character arcs table, central conflict, themes.
+
+Acceptance criteria:
+- Outline forms a complete causal chain across all five chapters.
+- Each character arc has a clear start, turning point, and end state.
+- Five-chapter structure accommodates the full central conflict.
 
 ## sec-004: Character Profiles
 
-为主要角色创建详细档案。输出到 `story_bible/characters.md`。
+Objective: develop detailed profiles for every major character.
 
-- 亚瑟·黑木 (Arthur Blackwood)：猎犬骑士团资深猎人，沉默寡言，
-  内心对教会的教条已生怀疑
-- 莉维亚·灰 (Livia Grey)：被注射圣血的少女，原为教会书记官之女，
-  因父亲发现真相被灭口，自己成为下一个"女巫"
-- 审判长塞维林 (High Justiciar Severin)：苍白城教会实际掌权者，
-  圣血仪式的秘密主持者，冷酷且精于操纵
-- "慈母"格蕾塔 (Mother Greta)：地下墓穴中庇护逃犯的老妇人，
-  曾是教会护士，亲眼见证圣血仪式如何开始
-- 猎人队长卡斯帕 (Captain Caspar)：亚瑟的导师和上级，
-  奉命追捕亚瑟，但内心对教会的命令日益怀疑
+Inputs: `story_bible/outline.md`.
 
-验证标准：每个角色是否具有独特的声音和动机？角色关系是否有
-足够的张力？反派是否具有可信的动机而非纯粹的邪恶？
+Deliverables:
+- `story_bible/characters.md` — per-character identity, personality, background,
+  internal conflict, arc, and relationship map.
+
+Acceptance criteria:
+- Each character has a distinct voice and motivation.
+- Relationship tensions are mapped and exploitable for drama.
+- Antagonist has credible motivation beyond pure evil.
 
 ## sec-005: Character Review
 
-审查所有角色档案的一致性，修正矛盾，补全缺失。
+Objective: audit character profiles for consistency and completeness.
 
-验证标准：角色是否全员与大纲兼容？角色间的互动潜力是否充分？
+Inputs: `story_bible/characters.md`, `story_bible/outline.md`.
+
+Deliverables: finalized `story_bible/characters.md` with resolved inconsistencies.
+
+Acceptance criteria:
+- All characters are compatible with the outline.
+- Cross-character interaction potential is fully surfaced.
+- No contradictions in backstory or motivation.
 
 ---
 
 ## Chapter Pipeline (sec-006 ~ sec-010)
 
-### sec-006: Chapter 01 — 猩红初印
+Each chapter section follows the same executor→verifier pattern:
+1. Read all story bible files and previous chapters.
+2. Write the chapter to `draft/chapters/chapter-0X.md`.
+3. Update story bible with chapter summary, entity changes, and character state.
+4. Run `node .claude/skills/novel-check/check_novel.js` for continuity.
 
-开幕。亚瑟和卡斯帕带队在苍白城旧城区追猎一名被指认为"血印女巫"
-的女性。猎杀成功后，亚瑟在死者身上发现异常——她身上的血印与
-教会档案中描述的"自然浮现"不符，有注射痕迹。
+### sec-006: Chapter 01 — Opening
 
-当晚，亚瑟独自调查，追踪到一名刚从教会孤儿院逃出的少女莉维亚。
-她的手腕上正浮现猩红的纹章——刚被注射了圣血。在将她交给教会
-或放她走之间，亚瑟做出了选择：他伪造了她的死亡报告。
+Objective: establish the world, introduce the protagonist, and deliver
+the inciting incident that sets the plot in motion.
 
-字数目标：3000+ 字符。输出到 `draft/chapters/chapter-01.md`。
+Inputs: `story_bible/world.md`, `story_bible/characters.md`, `story_bible/outline.md`.
 
-验证标准：
-- 哥特恐怖氛围是否在第一段就建立起来？
-- 亚瑟的内心冲突是否通过行动和细节而非直接陈述来展现？
-- 莉维亚的第一次出场是否足够有力？
-- 章节结尾的伪造报告是否构成清晰的激励事件？
-- 世界观细节（煤气灯、大教堂、猎犬仪式）是否融入叙事而非堆砌？
+Deliverables:
+- `draft/chapters/chapter-01.md` (3000+ characters).
+- Updated `story_bible/chapter_summaries.md`, `story_bible/timeline.md`, `story_bible/entities.md`.
 
-### sec-007: Chapter 02 — 墓穴深处
+Acceptance criteria:
+- Gothic horror atmosphere is established in the first paragraphs.
+- Protagonist's internal conflict is shown through action and detail, not stated.
+- Chapter ends with a clear inciting decision that makes the next chapter inevitable.
+- World details are woven into narrative, not info-dumped.
 
-亚瑟将莉维亚藏入地下墓穴，在那里他们遇到了"慈母"格蕾塔。
-格蕾塔透露：圣血仪式已经持续了十年，教会高层将古神之血称为
-"恩赐"，注射给孤儿院的孩子和政治犯，制造"女巫"以供猎杀。
-莉维亚的父亲——教会书记官——因试图揭露真相而被处决。
+### sec-007: Chapter 02 — Escalation
 
-与此同时，卡斯帕开始调查亚瑟的异常行为，在莉维亚的"尸体"
-下落不明后，他被迫面对一个选择：继续信任自己的学生，
-还是执行教会的追捕令。
+Objective: escalate the conflict, deepen character relationships,
+and introduce complications that raise the stakes.
 
-字数目标：3000+ 字符。输出到 `draft/chapters/chapter-02.md`。
+Inputs: `draft/chapters/chapter-01.md`, all story bible files.
 
-验证标准：
-- 地下墓穴的设定是否具有独特的恐怖美感？
-- 格蕾塔的揭露是否自然地推进了剧情而非"信息倾倒"？
-- 卡斯帕的副线是否与主线产生了有效的平行张力？
-- 圣血仪式的真相是否令人不寒而栗？
+Deliverables:
+- `draft/chapters/chapter-02.md` (3000+ characters).
+- Updated story bible files.
 
-### sec-008: Chapter 03 — 猩红圣殿
+Acceptance criteria:
+- Chapter follows causally from Chapter 01's ending.
+- At least one relationship or loyalty is meaningfully complicated.
+- Backstory reveals change the reader's understanding of earlier events.
+- A parallel tension thread creates dramatic irony.
 
-亚瑟潜入教会档案室寻找圣血仪式的证据。他在那里发现了更恐怖的真相：
-古神之血不仅制造"女巫"——它确实在缓慢改变所有被注射者，
-逐渐将他们转化为某种非人的存在。教会高层中已有人被血完全腐化，
-正在秘密策划一场大规模"圣血降灵"，意图让古神意识完全降临。
+### sec-008: Chapter 03 — Reversal
 
-莉维亚的血印开始扩散，她开始听到"低语"——古神在血中的意识
-在呼唤她。亚瑟必须在莉维亚被完全转化前找到解药，同时躲避卡斯帕
-日益逼近的追捕。
+Objective: deliver the central reversal that changes the story's trajectory
+irreversibly.
 
-字数目标：3000+ 字符。输出到 `draft/chapters/chapter-03.md`。
+Inputs: previous chapters, all story bible files.
 
-验证标准：
-- 档案室的发现场景是否营造了足够的紧张感和恐怖感？
-- 古神意识的揭示是否提升了故事的可怕维度？
-- 莉维亚的逐渐变化是否令人揪心且可信？
-- 亚瑟从"追猎者"到"被迫猎者"的转变是否完整？
+Deliverables:
+- `draft/chapters/chapter-03.md` (3000+ characters).
+- Updated story bible files.
 
-### sec-009: Chapter 04 — 猎犬之牙
+Acceptance criteria:
+- The reversal is clear and cannot be undone.
+- Personal stakes connect to the larger thematic conflict.
+- Revelation scenes build tension rather than dumping information.
+- The protagonist's transformation from one state to another is complete.
 
-卡斯帕终于追踪到亚瑟。在地下沉没大教堂的废墟中——一个被遗忘的
-圣殿，石柱上刻着远古的禁忌文字——师徒二人拔剑对峙。卡斯帕并非
-来逮捕亚瑟：他带来了教会内部叛变的消息。一部分低级骑士在得知
-真相后已经倒戈，但塞维林审判长启动了"终末净化"——计划在午夜
-用大教堂的钟声激活所有被注射者体内的古神之血，将他们全部转化为
-怪物，然后以"神圣净化"之名屠城。
+### sec-009: Chapter 04 — Confrontation
 
-亚瑟、莉维亚、格蕾塔和卡斯帕必须在午夜前潜入圣血大教堂的核心
-——血之圣坛——摧毁仪式的中枢。
+Objective: bring all tensions to a head and force characters into their
+final positions.
 
-字数目标：3000+ 字符。输出到 `draft/chapters/chapter-04.md`。
+Inputs: previous chapters, all story bible files.
 
-验证标准：
-- 卡斯帕的倒戈是否令人信服？（之前章节的铺垫是否足够？）
-- 沉没大教堂的设定是否具有视觉冲击力？
-- 终末净化的阴谋是否将故事的恐怖提升到了新的高度？
-- 四人同盟的结成是否自然且令人期待？
+Deliverables:
+- `draft/chapters/chapter-04.md` (3000+ characters).
+- Updated story bible files.
 
-### sec-010: Chapter 05 — 苍白黎明
+Acceptance criteria:
+- The confrontation scene is dramatic and earned by earlier setup.
+- Secondary character arcs converge meaningfully with the main plot.
+- The cost of earlier choices is made visible and painful.
+- The stakes feel genuinely life-or-death.
 
-最终章。亚瑟一行潜入大教堂地下圣坛，发现塞维林已经完成了仪式的
-最后准备。在血之圣坛的深渊中——一个直通地底古神躯体的裂口——
-亚瑟与塞维林进行最后的对决。莉维亚体内的古神意识在圣坛附近急剧
-增强，她必须在被完全吞噬前做出选择：跳入裂口与古神同归于尽，
-还是信任亚瑟能找到另一种方法。
+### sec-010: Chapter 05 — Resolution
 
-结局：仪式被破坏但不完全。莉维亚的血印停止了扩散但未消失。
-塞维林被杀死但教会体系未被推翻。亚瑟和莉维亚逃入地下墓穴深处，
-带走了圣血仪式的证据——也许有一天，这些证据能够从内部瓦解教会。
-但现在，他们只能继续跑，而头顶的苍白城迎来了一个虚假的黎明：
-大多数人仍然相信猎犬在保护他们，但猎犬自己已经知道了真相。
+Objective: complete the immediate arc while preserving future stakes.
 
-字数目标：3000+ 字符。输出到 `draft/chapters/chapter-05.md`。
+Inputs: previous chapters, all story bible files.
 
-验证标准：
-- 最终对决是否具有情感重量而不仅是动作场面？
-- 莉维亚的选择是否是整条角色弧线的自然收束？
-- 结局是否在"完成"与"开放"之间取得平衡？
-- 哥特恐怖的基调是否贯穿到最后一页？
-- 故事圣经中的所有文件是否包含最终摘要和角色状态？
+Deliverables:
+- `draft/chapters/chapter-05.md` (3000+ characters).
+- Finalized story bible files with complete summaries and character states.
+
+Acceptance criteria:
+- The immediate arc resolves satisfyingly.
+- The ending balances closure with open possibility.
+- The gothic horror tone is sustained to the final page.
+- All story bible files contain final summaries and character states.
+- `node .claude/skills/novel-check/check_novel.js` passes.

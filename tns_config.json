@@ -1,7 +1,8 @@
 {
-  "workspace": "/Users/migraine/Desktop/tns-noval",
-  "product_doc": "/Users/migraine/Desktop/tns-noval/task.md",
-  "thread": 1,
+  "workspace": ".",
+  "product_doc": "task.md",
+  "thread": 2,
+  "threads": 2,
   "refresh_hours": 5,
   "refresh_minutes": null,
   "refresh_seconds": null,
@@ -10,12 +11,31 @@
   "success_interval_seconds": 1,
   "idle_interval_seconds": 60,
   "max_budget_usd": null,
+  "agent_provider": {
+    "name": "claude",
+    "command": "claude",
+    "model": "sonnet"
+  },
   "permissions": {
     "default_profile": "standard",
     "profiles": {
       "standard": {
         "permission_mode": "acceptEdits",
-        "allowed_bash_commands": ["pwd","ls","cat","sed","rg","find","git","node","wc","mkdir","test"],
+        "allowed_bash_commands": [
+          "pwd",
+          "ls",
+          "cat",
+          "sed",
+          "rg",
+          "find",
+          "git",
+          "node",
+          "tns",
+          "claude",
+          "wc",
+          "mkdir",
+          "test"
+        ],
         "workspace_only": true
       }
     },
@@ -26,11 +46,22 @@
     "max_agent_runtime_seconds": 1800,
     "kill_grace_seconds": 15
   },
+  "exploration": {
+    "enabled": false,
+    "allow_taskx": true,
+    "taskx_filename": "taskx.md",
+    "max_rounds_per_window": 1,
+    "agent": "tns-executor",
+    "plan_taskx": true,
+    "taskx_min_score": 75,
+    "taskx_branch_dir": ".tns/taskx",
+    "require_taskx_deliverables": true
+  },
   "tmux": {
     "enabled": false,
     "auto_create": true,
     "session_name": "",
-    "window_name": "tns",
+    "window_name": "tns-noval",
     "socket_name": "",
     "manage_runner": false,
     "runner_window_name": "tns-runner"
@@ -66,24 +97,60 @@
   "attempts": { "max_attempts_per_section": 3 },
   "preflight": {
     "required_files": ["task.md"],
-    "required_directories": [".tns","draft/chapters","story_bible"]
+    "required_directories": [".tns","draft/chapters","story_bible",".claude/skills/novel-check"]
   },
+  "validators": [
+    {
+      "id": "story-bible-complete",
+      "stage": "post_run",
+      "kind": "file_exists",
+      "path": "story_bible/world.md",
+      "description": "world setting exists"
+    },
+    {
+      "id": "story-bible-characters",
+      "stage": "post_run",
+      "kind": "file_exists",
+      "path": "story_bible/characters.md",
+      "description": "character profiles exist"
+    },
+    {
+      "id": "chapters-all-exist",
+      "stage": "post_run",
+      "kind": "file_exists",
+      "path": "draft/chapters/chapter-05.md",
+      "description": "final chapter exists (pipeline complete)"
+    }
+  ],
   "command_bridge": {
-    "command_sets": {},
+    "command_sets": {
+      "check-continuity": {
+        "id": "check-continuity",
+        "command": ["node", ".claude/skills/novel-check/check_novel.js"],
+        "timeout_seconds": 30,
+        "description": "validate novel continuity across story bible and chapter drafts"
+      },
+      "demo-fsm": {
+        "id": "demo-fsm",
+        "command": ["node", ".claude/skills/novel-fsm-demo/demo_fsm.js", "--speed", "100", "--steps", "15"],
+        "timeout_seconds": 30,
+        "description": "dry-run FSM pipeline validation before live execution"
+      }
+    },
     "hooks": [
       {
         "id": "ensure-chapter-dir",
         "timing": "pre_step",
         "section_ids": ["sec-006","sec-007","sec-008","sec-009","sec-010"],
         "command": "mkdir -p draft/chapters",
-        "description": "Ensure chapter output directory exists before any chapter write"
+        "description": "ensure chapter output directory exists before any chapter write"
       },
       {
         "id": "check-novel-continuity",
         "timing": "post_step",
         "section_ids": ["sec-003","sec-005","sec-006","sec-007","sec-008","sec-009","sec-010"],
-        "command": "node skills/novel-check/check_novel.js",
-        "description": "Run novel continuity check via novel-check skill after each content-producing step"
+        "command": "node .claude/skills/novel-check/check_novel.js",
+        "description": "run novel continuity check via novel-check skill after each content-producing step"
       }
     ]
   },
@@ -101,77 +168,107 @@
   "outputs": { "write_section_outputs": true },
   "execution": {
     "long_running": {
-      "agent": "tns-executor", "workspace": "primary",
-      "persists_state": true, "max_parallel": 2
+      "agent": "tns-executor",
+      "workspace": "primary",
+      "persists_state": true,
+      "max_parallel": 2
     },
     "temporary": {
-      "agent": "tns-temp-executor", "workspace": "temporary",
-      "persists_state": false, "must_report_to": "tns-executor",
-      "gc_after_run": true, "max_parallel": 2
+      "agent": "tns-temp-executor",
+      "workspace": "temporary",
+      "persists_state": false,
+      "must_report_to": "tns-executor",
+      "gc_after_run": true,
+      "max_parallel": 2
     },
     "verifier": {
-      "agent": "tns-verifier", "workspace": "primary",
-      "persists_state": false, "must_report_to": "tns-executor",
-      "gc_after_run": true, "max_runtime_seconds": 600, "max_parallel": 2
+      "agent": "tns-verifier",
+      "workspace": "primary",
+      "persists_state": false,
+      "must_report_to": "tns-executor",
+      "gc_after_run": true,
+      "max_runtime_seconds": 600,
+      "max_parallel": 1
     }
   },
   "externals": {
-    "tools": [],
+    "tools": [
+      {
+        "name": "node",
+        "required": true,
+        "purpose": "run continuity checker and FSM demo"
+      },
+      {
+        "name": "tns",
+        "required": true,
+        "purpose": "TNS 1.0.3 compile, doctor, and runner commands"
+      },
+      {
+        "name": "claude",
+        "required": true,
+        "purpose": "Claude Code executor and verifier agent"
+      }
+    ],
     "skills": [
       {
         "name": "novel-check",
         "required": true,
-        "purpose": "Continuity validation for novel story bible and chapter drafts",
+        "purpose": "continuity validation for novel story bible and chapter drafts",
         "source_kind": "skills_dir",
-        "source_path": "skills/novel-check"
+        "source_path": ".claude/skills",
+        "path": ".claude/skills/novel-check"
       },
       {
         "name": "novel-fsm-demo",
         "required": false,
-        "purpose": "Dry-run FSM pipeline validation before live execution",
+        "purpose": "dry-run FSM pipeline validation before live execution",
         "source_kind": "skills_dir",
-        "source_path": "skills/novel-fsm-demo"
+        "source_path": ".claude/skills",
+        "path": ".claude/skills/novel-fsm-demo"
       }
     ],
     "mcp": []
   },
   "skillbases": {
     "use_default_sources": true,
-    "sources": [
-      {
-        "path": "skills",
-        "kind": "skills_dir",
-        "enabled": true,
-        "priority": 1
-      }
-    ],
-    "selection": { "mode": "explicit", "max_matches_per_section": 2, "min_score": 0.22, "verifier_mode": "none" }
+    "sources": [],
+    "selection": {
+      "mode": "explicit",
+      "max_matches_per_section": 2,
+      "min_score": 0.22,
+      "verifier_mode": "none"
+    }
   },
   "injections": {
     "default_profile": null,
     "profiles": {
-      "compiler": { "skills": ["tns-program-compiler"], "description": "Compiler skill for compile synthesis passes." },
-      "planner": { "skills": ["tns-task-planner"], "description": "Planner skill for task quality and task.md planning passes." },
-      "executor_task": { "skills": ["novel-check"], "description": "Executor skills: novel continuity validation." },
-      "verifier_audit": { "skills": ["novel-check"], "description": "Verifier skills: novel continuity audit." }
+      "compiler": {
+        "skills": ["tns-program-compiler"],
+        "description": "Compiler skill for compile synthesis passes."
+      },
+      "planner": {
+        "skills": ["tns-task-planner"],
+        "description": "Planner skill for task quality and task.md planning passes."
+      },
+      "executor_task": {
+        "skills": ["novel-check"],
+        "description": "Executor skills: novel continuity validation injected into writing sections."
+      },
+      "verifier_audit": {
+        "skills": ["novel-check"],
+        "description": "Verifier skills: independent continuity audit."
+      }
     },
     "rules": [
       { "match_mode": "compile", "profile": "compiler" },
       { "match_mode": "plan", "profile": "planner" },
-      { "match_mode": "executor", "profile": "executor_task" },
+      { "match_mode": "executor", "match_title": "Chapter 0", "profile": "executor_task" },
       { "match_mode": "verifier", "profile": "verifier_audit" }
     ]
   },
   "_program_from_compiled": false,
   "program": {
     "entry": "sec-001",
-    "context": {
-      "current_chapter": 0,
-      "total_chapters": 5,
-      "loop_count": 0,
-      "max_loops": 30
-    },
-    "max_steps": 100,
     "threads": 2,
     "parallel": { "mode": "auto", "max_threads": 2 },
     "states": [

@@ -1,20 +1,10 @@
-# TNS runtime state (regenerated on each run)
-.tns/
-
-# Python
-__pycache__/
-*.pyc
-.venv/
-venv/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-
-# Env
 .env
-.env.local
+.env.*
+!.env.example
+
+/node_modules/
+npm-debug.log*
+
+/.tns/
+
+.DS_Store

@@ -9,7 +9,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const WORKSPACE = resolve(__dirname, "../..");
+const WORKSPACE = resolve(__dirname, "../../..");
 const CONFIG_PATH = resolve(WORKSPACE, "tns_config.json");
 const SECTIONS_PATH = resolve(WORKSPACE, ".tns", "sections.json");
 const HANDOFF_PATH = resolve(WORKSPACE, ".tns", "handoff.md");
