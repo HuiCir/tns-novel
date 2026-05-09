@@ -1,16 +1,14 @@
 # Story Outline
 
-Replace this file with the complete story outline before writing chapters.
+## Three-Act Structure
 
-## Structure
-Define the act structure for this arc.
+### Act I (Ch 01-02): The Discovery
+### Act II (Ch 03): The Reversal
+### Act III (Ch 04-05): The Reckoning
 
 ## Character Arcs
-| Character | Starting State | Arc | Ending State |
-|-----------|---------------|-----|-------------|
+| Character | Start | Arc | End |
 
 ## Central Conflict
-Describe the primary conflict driving the story.
 
 ## Themes
-List the key themes to develop across chapters.
