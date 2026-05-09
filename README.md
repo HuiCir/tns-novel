@@ -23,9 +23,6 @@ cd tns-novel
 tns init --workspace "$PWD" --task task.md --runner direct --dashboard
 tns compile
 tns doctor
-tns gateway serve
-tns gateway web --port 48731
-tns start
 ```
 
 `git clone` gives you the template workspace: `task.md`, `tns_config.json`,
@@ -33,13 +30,29 @@ story bible templates, chapter draft templates, and `.claude/skills/`. It
 does not include `.tns/`, because `.tns/` is local runtime state: locks,
 section status, compiled program, dashboard key, gateway events, runner
 heartbeats, and agent run records. `tns init` creates that local runtime
-directory for the clone you are about to run.
+directory for the clone you are about to run. Note the **dashboard key**
+printed by `tns init --dashboard` — you will need it to open the dashboard URL.
 
-Use gateway/dashboard mode for normal runs: keep `tns gateway serve`,
-`tns gateway web --port 48731`, and `tns start` running in separate
-shells or a process manager. `tns init --dashboard` prints the dashboard
-URL and key for the local workspace. For a one-shot non-monitoring check,
-use `tns run --once` instead of `tns start`.
+### Start the dashboard (terminal 1)
+
+```bash
+tns gateway web --port 48731
+```
+
+Then open the dashboard URL printed by `tns init --dashboard`, e.g.
+`http://127.0.0.1:48731/?workspace=...&key=xxxx-xxxx`.
+
+### Start the runner (terminal 2)
+
+```bash
+tns start
+```
+
+This runs the executor→verifier loop continuously. For a one-shot
+non-monitoring check, use `tns run --once` instead.
+
+The gateway and runner are long-running processes — keep them in
+separate terminals or a process manager.
 
 The template is driven by `tns_config.json`, `task.md`, and the workspace
 skills `.claude/skills/novel-check` and `.claude/skills/novel-fsm-demo`.
